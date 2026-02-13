@@ -11,3 +11,9 @@
     max-width: 800px;
     margin: 0 auto;
 }
+
+.basicView__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
