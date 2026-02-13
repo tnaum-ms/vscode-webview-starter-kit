@@ -1,0 +1,39 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Extension (webpack)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--profile=noExtensionsProfile", "--extensionDevelopmentPath=${workspaceFolder}/dist"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "Watch",
+      "autoAttachChildProcesses": true,
+      "debugWebWorkerHost": true,
+      "debugWebviews": false,
+      "trace": true,
+      "sourceMaps": true,
+      "pauseForSourceMap": true,
+      "rendererDebugOptions": {
+        "webRoot": "${workspaceFolder}"
+      },
+      "resolveSourceMapLocations": ["${workspaceFolder}/dist/**", "!**/node_modules/**"],
+      "sourceMapPathOverrides": {
+        "./*": "${workspaceFolder}/*"
+      },
+      "env": {
+        "DEBUGTELEMETRY": "verbose",
+        "NODE_DEBUG": "",
+        "DEBUG_WEBPACK": "",
+        "DEVSERVER": "true",
+        // Set to "true" to pause execution at the first line of the extension's
+        // activate() function. This is needed to debug activation code because the
+        // environment takes a long time to load and regular breakpoints in
+        // activation code would not be hit otherwise.
+        "STOP_ON_ENTRY": "false"
+      }
+    }
+  ]
+}

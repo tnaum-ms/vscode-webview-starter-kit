@@ -1,0 +1,25 @@
+# These files are excluded during vsce package
+.github/**
+.vscode-test/**
+.vscode/**
+dist/test/**
+node_modules/**
+out/**
+src/**
+**/*.gif
+**/*.map
+*.tgz
+*.ts
+*.zip
+.editorconfig
+.gitignore
+.nvmrc
+.prettierignore
+.swcrc
+eslint.config.mjs
+prettier.config.mjs
+stats.json
+test-results.xml
+tsconfig.*
+webpack.config*
+jest.config.js

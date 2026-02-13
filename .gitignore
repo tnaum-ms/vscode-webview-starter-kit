@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+
+# VS Code extension tests
+.vscode-test/
+test-results.xml
+
+# Package artifacts
+*.vsix
+*.tgz
+*.zip
+stats.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.swp
+*.swo

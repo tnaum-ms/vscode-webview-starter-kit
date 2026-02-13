@@ -1,0 +1,27 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "search.exclude": {
+    "out": true,
+    "**/node_modules": true,
+    ".vscode-test": true
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "vscode-nmake-tools.workspaceBuildDirectories": ["."],
+  "vscode-nmake-tools.installOsRepoRustHelperExtension": false,
+  "sarif-viewer.connectToGithubCodeScanning": "off"
+  // "eslint.workingDirectories": [
+  //     ".", "src"
+  //   ]
+}

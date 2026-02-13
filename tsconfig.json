@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2023",
+    "outDir": "out",
+    "lib": ["ES2023", "dom", "dom.iterable", "webworker"],
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "noUnusedParameters": true,
+    "rootDir": ".",
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./",
+    "alwaysStrict": true,
+    "paths": {
+      "*": ["node_modules/@types/*", "*"]
+    },
+    "jsx": "react-jsx"
+  },
+  "exclude": ["node_modules", ".vscode-test"]
+}
