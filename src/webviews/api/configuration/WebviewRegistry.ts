@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { BasicView } from '../../demo/basicView/BasicView';
 import { MainView } from '../../demo/mainView/MainView';
 
 export const WebviewRegistry = {
+    basicView: BasicView,
     mainView: MainView,
 } as const;
 
