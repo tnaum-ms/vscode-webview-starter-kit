@@ -15,6 +15,7 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 - [Debugging](#debugging)
 - [Architecture](#architecture)
 - [Under the Hood](#under-the-hood)
+- [Copilot Skills](#copilot-skills)
 - [Adding a New View](#adding-a-new-view)
 - [Advanced](#advanced)
 - [FAQ](#faq)
@@ -127,15 +128,39 @@ VS Code webviews communicate with the extension host through `window.postMessage
 
 `WebviewController` generates a strict CSP header for each webview panel. Only resources from the extension's own directory and the webview's `cspSource` are allowed, following [VS Code's security best practices](https://code.visualstudio.com/docs/extensions/webview#_security).
 
+## Copilot Skills
+
+This repository ships with **GitHub Copilot skills** — structured knowledge files in `.github/skills/` that teach Copilot the project's architecture and conventions. When Copilot is active in this workspace, it automatically picks up these skills and applies them to your requests.
+
+| Skill                          | File                                                           | What it covers                                                                                                                                                             |
+| ------------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **react-webview-architecture** | [SKILL.md](.github/skills/react-webview-architecture/SKILL.md) | React component patterns, Fluent UI integration, state management (Context API), Monaco Editor usage, stale closure fixes, styling conventions                             |
+| **webview-trpc-messaging**     | [SKILL.md](.github/skills/webview-trpc-messaging/SKILL.md)     | tRPC router creation, procedure definitions (queries, mutations, subscriptions), WebviewController wiring, WebviewRegistry, telemetry middleware, AbortSignal cancellation |
+
+With these skills in place, you can ask Copilot to create a new webview, add a tRPC procedure, or wire up a controller, and it will follow the same patterns used throughout the codebase — producing code that compiles and integrates correctly on the first try.
+
 ## Adding a New View
 
+The Copilot skills described above understand the full process for creating webviews. When you ask GitHub Copilot to create a new webview, the skills guide it through the entire process automatically.
+
+For a complete, step-by-step walkthrough, see [PR #1 — Add Basic View](https://github.com/tnaum-ms/vscode-webview-starter-kit/pull/1). It builds up a new webview across four incremental commits, each demonstrating a single step:
+
+1. **Scaffold** — Create the component (`BasicView.tsx`), controller, empty router, styles, and register in `WebviewRegistry` + `appRouter`
+2. **Command & navigation** — Add a VS Code command to open the view, register it in `package.json`, and add a link from the Main View
+3. **Client-side interaction** — Add a button and label using local React state (`useState`)
+4. **Extension host communication** — Add a `hello` tRPC query to the router and wire the button to call it
+
+### Typical steps
+
+When creating a new webview manually, these are the files and registrations involved:
+
 1. Create a new folder under `src/webviews/demo/yourView/`
-2. Add a tRPC router (`yourViewRouter.ts`)
-3. Add a controller (`yourViewController.ts`)
-4. Add a React component (`YourView.tsx`)
-5. Register the view in `WebviewRegistry.ts`
+2. Add a React component (`YourView.tsx`)
+3. Add a tRPC router (`yourViewRouter.ts`)
+4. Add a controller (`yourViewController.ts`) that extends `WebviewController`
+5. Register the component in `WebviewRegistry.ts`
 6. Wire the router into `appRouter.ts`
-7. Add a command handler to open it
+7. Add a command handler (`src/commands/openYourView.ts`) and register it in `extension.ts` and `package.json`
 
 ## Advanced
 
