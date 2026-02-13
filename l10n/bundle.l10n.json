@@ -61,6 +61,7 @@
   "Monaco Editor": "Monaco Editor",
   "Multi-line text...": "Multi-line text...",
   "Navigation": "Navigation",
+  "Open Basic View →": "Open Basic View →",
   "Open in Browser": "Open in Browser",
   "Open URL": "Open URL",
   "Opens an external URL in the default browser via vscode.env.openExternal. Useful for linking to documentation, issue trackers, or any external resource from your webview.": "Opens an external URL in the default browser via vscode.env.openExternal. Useful for linking to documentation, issue trackers, or any external resource from your webview.",

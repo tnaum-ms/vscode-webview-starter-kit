@@ -119,12 +119,20 @@
         "command": "webviewStarter.openMainView",
         "title": "Open Main View",
         "category": "Webview Starter Kit"
+      },
+      {
+        "command": "webviewStarter.openBasicView",
+        "title": "Open Basic View",
+        "category": "Webview Starter Kit"
       }
     ],
     "menus": {
       "commandPalette": [
         {
           "command": "webviewStarter.openMainView"
+        },
+        {
+          "command": "webviewStarter.openBasicView"
         }
       ]
     }
