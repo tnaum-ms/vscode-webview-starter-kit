@@ -9,6 +9,7 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 ## Table of Contents
 
 - [Features](#features)
+- [Try the Demo](#try-the-demo)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Development](#development)
@@ -31,6 +32,20 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 - **Monaco Editor** - Embedded code editor component
 - **Subscriptions & Abort** - Real-time data streaming and cancellable long-running operations
 - **Localization** - Full `@vscode/l10n` integration
+
+## Try the Demo
+
+A pre-built `.vsix` package is available so you can try the extension without cloning or building the project:
+
+1. Go to the [v1.0.0 release page](https://github.com/tnaum-ms/vscode-webview-starter-kit/releases/tag/v1.0.0)
+2. Download the `.vsix` file from the **Assets** section
+3. In VS Code, open the Command Palette (`Ctrl+Shift+P`) and run:
+   > **Extensions: Install from VSIX…**
+4. Select the downloaded `.vsix` file
+5. Once installed, open the Command Palette and run:
+   > **Webview Starter Kit: Open Main View**
+
+To uninstall later, find the extension in the Extensions sidebar and click **Uninstall**.
 
 ## Getting Started
 
@@ -69,6 +84,20 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 | `npm run prettier-fix` | Format code                     |
 | `npm run test`         | Run Jest tests                  |
 | `npm run l10n`         | Rebuild localization bundles    |
+
+### Activation Events
+
+This starter kit uses a wildcard activation event for demo convenience:
+
+```json
+"activationEvents": [
+    "*"
+]
+```
+
+This causes the extension to activate **on every VS Code startup**, which negatively impacts startup performance. It is used here only so that demo commands are immediately available without requiring a specific trigger.
+
+For a production extension, replace `"*"` with scoped activation events (e.g., `onCommand:`, `onView:`, `onLanguage:`) that match your actual usage. See the [Activation Events documentation](https://code.visualstudio.com/api/references/activation-events) for the full list of supported events.
 
 ### Hot Reloading
 
