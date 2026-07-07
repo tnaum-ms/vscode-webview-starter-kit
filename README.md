@@ -37,7 +37,7 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 
 A pre-built `.vsix` package is available so you can try the extension without cloning or building the project:
 
-1. Go to the [v1.0.0 release page](https://github.com/tnaum-ms/vscode-webview-starter-kit/releases/tag/v1.0.0)
+1. Go to the [v2.0.0 release page](https://github.com/tnaum-ms/vscode-webview-starter-kit/releases/tag/v2.0.0)
 2. Download the `.vsix` file from the **Assets** section
 3. In VS Code, open the Command Palette (`Ctrl+Shift+P`) and run:
    > **Extensions: Install from VSIX…**
