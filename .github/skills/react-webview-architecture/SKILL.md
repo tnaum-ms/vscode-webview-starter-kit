@@ -48,7 +48,7 @@ viewName/
 ├── ViewName.tsx            # Main component
 ├── viewName.scss           # Styles
 ├── viewNameContext.ts      # Context + state types (if complex)
-├── viewNameController.ts   # WebviewController subclass (extension-side)
+├── viewNameController.ts   # Panel factory over openAppWebview (extension-side)
 ├── viewNameRouter.ts       # tRPC router (extension-side, see webview-trpc-messaging skill)
 ├── constants.ts
 ├── components/             # Sub-components

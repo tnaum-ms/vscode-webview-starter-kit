@@ -34,7 +34,7 @@ viewName/
 ├── viewName.tsx           # Main component
 ├── viewName.scss          # View-specific styles
 ├── viewNameContext.ts     # Context and state types (if complex)
-├── viewNameController.ts  # Backend communication logic (WebviewController subclass)
+├── viewNameController.ts  # Backend wiring: panel factory over openAppWebview
 ├── viewNameRouter.ts      # tRPC router with server-side procedures
 ├── constants.ts           # View-specific constants
 ├── components/            # Sub-components
@@ -658,18 +658,17 @@ export function render<V extends ViewKey>(key: V, vscodeApi: WebviewApi<WebviewS
 
 ### Configuration Flow
 
-1. Extension host creates `WebviewController` with a configuration object
-2. Configuration is serialized as `encodeURIComponent(JSON.stringify(config))` in the HTML template
-3. Webview reads it via `useConfiguration<T>()` hook:
+1. The extension host opens the panel via `openAppWebview` (the preset over the
+   package's `openWebview` factory) with a configuration object
+2. The framework serializes it as `encodeURIComponent(JSON.stringify(config))` in
+   the webview HTML it generates
+3. Webview reads it via the package's `useConfiguration<T>()` hook (from
+   `@microsoft/vscode-ext-webview/react`), which decodes and parses that blob:
 
 ```tsx
-export function useConfiguration<T>(): T {
-  const [configuration] = useState<T>(() => {
-    const configString = decodeURIComponent(window.config?.__initialData ?? '{}');
-    return JSON.parse(configString) as T;
-  });
-  return configuration;
-}
+import { useConfiguration } from '@microsoft/vscode-ext-webview/react';
+
+const config = useConfiguration<MyViewConfig>();
 ```
 
 ---
