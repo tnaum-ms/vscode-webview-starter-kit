@@ -4,29 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ext } from '../../../extensionVariables';
-import { WebviewController } from '../../api/extension-server/WebviewController';
+import { type AppWebviewController, openAppWebview } from '../../_integration/openAppWebview';
 import { type RouterContext } from './mainViewRouter';
 
 export interface MainViewConfig {
     extensionVersion: string;
 }
 
-export class MainViewController extends WebviewController<MainViewConfig> {
-    constructor() {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const version = (ext.context.extension.packageJSON.version as string) ?? '0.0.0';
+/**
+ * Opens the Main demo webview panel.
+ *
+ * A construction-only panel: it derives its configuration and router context,
+ * then hands the fixed wiring to the `openAppWebview` preset. The returned
+ * handle exposes `panel`, `onDisposed`, `revealToForeground`, `dispose`, and
+ * `isDisposed`.
+ */
+export function openMainViewPanel(): AppWebviewController<MainViewConfig> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const version = (ext.context.extension.packageJSON.version as string) ?? '0.0.0';
 
-        const config: MainViewConfig = {
-            extensionVersion: version,
-        };
+    const config: MainViewConfig = {
+        extensionVersion: version,
+    };
 
-        super(ext.context, 'Webview Starter Kit', 'mainView', config);
+    const context: RouterContext = {
+        webviewName: 'mainView',
+        extensionVersion: version,
+    };
 
-        const trpcContext: RouterContext = {
-            webviewName: 'mainView',
-            extensionVersion: version,
-        };
-
-        this.setupTrpc(trpcContext);
-    }
+    return openAppWebview({
+        title: 'Webview Starter Kit',
+        webviewName: 'mainView',
+        config,
+        context,
+    });
 }

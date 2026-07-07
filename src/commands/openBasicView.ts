@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BasicViewController } from '../webviews/demo/basicView/basicViewController';
+import { openBasicViewPanel } from '../webviews/demo/basicView/basicViewController';
 
 export function openBasicView(): void {
-    new BasicViewController();
+    openBasicViewPanel();
 }
