@@ -34,18 +34,21 @@ Before finishing work on a PR, agents **must** run the following steps in order:
 
 ## Project Structure
 
-| Folder                               | Purpose                                           |
-| ------------------------------------ | ------------------------------------------------- |
-| `src/`                               | Main extension source code                        |
-| `src/webviews/`                      | React webview components and tRPC infrastructure  |
-| `src/webviews/api/configuration/`    | `appRouter`, `WebviewRegistry`                    |
-| `src/webviews/api/extension-server/` | `trpc.ts` init, `WebviewController`               |
-| `src/webviews/api/webview-client/`   | `useTrpcClient`, `useConfiguration`, `vscodeLink` |
-| `src/webviews/components/`           | Shared components (`MonacoEditor`, `Announcer`)   |
-| `src/webviews/theme/`                | Adaptive theming (`DynamicThemeProvider`)         |
-| `src/commands/`                      | Command handlers                                  |
-| `src/utils/`                         | Shared utility functions                          |
-| `l10n/`                              | Localization files                                |
+| Folder                        | Purpose                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/`                        | Main extension source code                                                                           |
+| `src/webviews/`               | React webview components                                                                             |
+| `src/webviews/_integration/`  | Consumer-owned glue over `@microsoft/vscode-ext-webview`: `appRouter`, `trpc` (telemetry adapter), `openAppWebview`, `useTrpcClient`, `WebviewRegistry` |
+| `src/webviews/components/`    | Shared components (`MonacoEditor`, `Announcer`)                                                      |
+| `src/webviews/theme/`         | Adaptive theming (`DynamicThemeProvider`)                                                            |
+| `src/commands/`               | Command handlers                                                                                     |
+| `src/utils/`                  | Shared utility functions                                                                             |
+| `l10n/`                       | Localization files                                                                                   |
+
+> The tRPC transport, panel facade (`WebviewController` / `openWebview`), and
+> React hooks (`useTrpcClient`, `useConfiguration`, `WithWebviewContext`) come
+> from the **`@microsoft/vscode-ext-webview`** package, imported via its `.`,
+> `/host`, `/webview`, and `/react` entry points. See [migration.md](../migration.md).
 
 ## TypeScript Guidelines
 

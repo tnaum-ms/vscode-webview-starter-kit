@@ -36,10 +36,10 @@ root.render(
 ```
 
 - **`DynamicThemeProvider`** — adapts Fluent UI theming to VS Code's active color theme
-- **`WithWebviewContext`** — provides `vscodeApi` (postMessage) via React Context
-- **`WebviewRegistry`** — maps webview names → React components (in `src/webviews/api/configuration/WebviewRegistry.ts`)
+- **`WithWebviewContext`** — provides `vscodeApi` (postMessage) via React Context (from `@microsoft/vscode-ext-webview/react`)
+- **`WebviewRegistry`** — maps webview names → React components (in `src/webviews/_integration/WebviewRegistry.ts`)
 
-Configuration from the extension host is read via `useConfiguration<T>()`.
+Configuration from the extension host is read via `useConfiguration<T>()` (from `@microsoft/vscode-ext-webview/react`).
 
 ## File Organization
 
@@ -192,7 +192,7 @@ Animations: `Collapse` from `@fluentui/react-motion-components-preview`
 
 | Hook                                  | Location                                 | Purpose                                                                                      |
 | ------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `useSelectiveContextMenuPrevention()` | `src/webviews/api/webview-client/utils/` | Prevents browser context menu everywhere except Monaco editors. Call once in top-level view. |
+| `useSelectiveContextMenuPrevention()` | `src/webviews/utils/`                    | Prevents browser context menu everywhere except Monaco editors. Call once in top-level view. |
 
 ## Conditional Rendering Patterns
 

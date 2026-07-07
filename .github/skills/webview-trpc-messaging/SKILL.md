@@ -1,6 +1,6 @@
 ---
 name: webview-trpc-messaging
-description: Implements tRPC-based communication between VS Code extension host and React webviews. Use when creating new webview procedures (queries, mutations, subscriptions), adding a new webview router, wiring up a webview controller, using the tRPC client from React components, applying telemetry middleware (trpcToTelemetry), or supporting AbortSignal-based cancellation in webview operations.
+description: Implements tRPC-based communication between VS Code extension host and React webviews using the @microsoft/vscode-ext-webview package. Use when creating new webview procedures (queries, mutations, subscriptions), adding a new webview router, opening a webview panel (openAppWebview / WebviewController), using the tRPC client from React components, applying the telemetry middleware body, or supporting AbortSignal-based cancellation in webview operations.
 ---
 
 # Webview tRPC Messaging
@@ -9,25 +9,30 @@ Type-safe RPC communication between the VS Code extension host (server) and Reac
 
 ## Architecture Overview
 
+The tRPC transport, panel facade, and React hooks are provided by the
+[`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview)
+package (imported via `.`, `/host`, `/webview`, `/react`). This repository owns
+only the consumer glue in `src/webviews/_integration/`.
+
 ```
 React Webview (client)                    Extension Host (server)
 ─────────────────────                     ──────────────────────
-useTrpcClient() hook                      WebviewController
-  └─ createTRPCClient                       └─ setupTrpc()
-       └─ vscodeLink ──── postMessage ────►     ├─ callerFactory(appRouter)
-            (send/onReceive)              ◄─────┤   └─ procedure(input)
-                                                └─ abort/subscription.stop
+useTrpcClient() hook                      openWebview / WebviewController
+  └─ vscodeLink ──── postMessage ────►       └─ dispatches against appRouter
+       (from the package)              ◄─────    via trpc.createCallerFactory
 ```
 
 **Key files** (read as needed for implementation details):
 
-| File                                                     | Purpose                                                                                    |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `src/webviews/api/extension-server/trpc.ts`              | tRPC init, `publicProcedure`, `publicProcedureWithTelemetry`                               |
-| `src/webviews/api/configuration/appRouter.ts`            | Root router bundling all view routers + `commonRouter`                                     |
-| `src/webviews/api/extension-server/WebviewController.ts` | WebviewPanel lifecycle, tRPC message dispatcher (queries, mutations, subscriptions, abort) |
-| `src/webviews/api/webview-client/useTrpcClient.ts`       | React hook providing the tRPC client                                                       |
-| `src/webviews/api/webview-client/vscodeLink.ts`          | Custom tRPC link bridging `postMessage` transport                                          |
+| File                                            | Purpose                                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `src/webviews/_integration/trpc.ts`             | tRPC init (`initWebviewTrpc`), `publicProcedure`, `publicProcedureWithTelemetry`, telemetry runner |
+| `src/webviews/_integration/appRouter.ts`        | Root router bundling all view routers + `commonRouter`; flavoured `BaseRouterContext`      |
+| `src/webviews/_integration/openAppWebview.ts`   | Preset over the package's `openWebview` factory (fixed wiring: router, `trpc`, layout)     |
+| `src/webviews/_integration/useTrpcClient.ts`    | Thin wrapper over the package's `useTrpcClient`, pre-typed to `AppRouter`                   |
+| `src/webviews/_integration/WebviewRegistry.ts`  | Maps webview names → React components; source of the `WebviewName` union                   |
+| `@microsoft/vscode-ext-webview/host`            | `openWebview`, `WebviewController`, `telemetryMiddlewareBody`, `TelemetryRunner` (package)  |
+| `@microsoft/vscode-ext-webview/webview`         | `vscodeLink`, `errorLink`, `connectTrpc` — the transport (package)                         |
 
 ## Creating a New Router
 
@@ -39,7 +44,7 @@ Extend `BaseRouterContext` with view-specific fields:
 
 ```typescript
 // src/webviews/myView/myViewRouter.ts
-import { type BaseRouterContext } from '../api/configuration/appRouter';
+import { type BaseRouterContext } from '../../_integration/appRouter';
 
 export type RouterContext = BaseRouterContext & {
   clusterId: string;
@@ -53,7 +58,7 @@ export type RouterContext = BaseRouterContext & {
 
 ```typescript
 import { z } from 'zod';
-import { publicProcedureWithTelemetry, router, type WithTelemetry } from '../../api/extension-server/trpc';
+import { publicProcedureWithTelemetry, router, type WithTelemetry } from '../../_integration/trpc';
 
 export const myViewRouter = router({
   // Query with telemetry (preferred for operations that touch external services)
@@ -74,8 +79,8 @@ export const myViewRouter = router({
 ### 3. Register in appRouter
 
 ```typescript
-// src/webviews/api/configuration/appRouter.ts
-import { myViewRouter } from '../../myView/myViewRouter';
+// src/webviews/_integration/appRouter.ts
+import { myViewRouter } from '../myView/myViewRouter';
 
 export const appRouter = router({
   common: commonRouter,
@@ -83,37 +88,48 @@ export const appRouter = router({
 });
 ```
 
-### 4. Create the controller
+### 4. Create the panel factory
+
+Construction-only panels open through the `openAppWebview` preset (Path B). The
+returned handle exposes `panel`, `onDisposed`, `revealToForeground`, `dispose`,
+and `isDisposed`.
 
 ```typescript
 // src/webviews/myView/myViewController.ts
-import { WebviewController } from '../api/extension-server/WebviewController';
+import { type AppWebviewController, openAppWebview } from '../../_integration/openAppWebview';
 import { type RouterContext } from './myViewRouter';
 
-export class MyViewController extends WebviewController<MyViewConfig> {
-  constructor(initialData: MyViewConfig) {
-    super(ext.context, title, 'myViewName', initialData);
+export function openMyViewPanel(initialData: MyViewConfig): AppWebviewController<MyViewConfig> {
+  const context: RouterContext = {
+    webviewName: 'myView',
+    clusterId: initialData.clusterId,
+    viewId: initialData.viewId,
+  };
 
-    const trpcContext: RouterContext = {
-      webviewName: 'myView',
-      clusterId: initialData.clusterId,
-      viewId: initialData.viewId,
-    };
-
-    this.setupTrpc(trpcContext);
-  }
+  return openAppWebview({
+    title,
+    webviewName: 'myViewName', // registry key
+    config: initialData,
+    context,
+  });
 }
 ```
 
-> **Important:** The `webviewName` in the `WebviewController` constructor is the **registry key** (must match a key in `WebviewRegistry`, e.g. `myViewName`). The `webviewName` in the tRPC context is a **telemetry label** used in telemetry event names (e.g. `myView`). These are intentionally different values — do not confuse them.
+> **Stateful controllers?** For panels with instance state or methods other
+> code calls, extend the package's `WebviewController` instead (Path A). Its
+> constructor takes a single options bag with `router`, `trpc`, `context`,
+> `config`, `sourceLayout`, and the required `isBundled` flag — the same object
+> `openAppWebview` builds.
+
+> **Important:** The `webviewName` passed to `openAppWebview` is the **registry key** (must match a key in `WebviewRegistry`, e.g. `myViewName`). The `webviewName` in the tRPC context is a **telemetry label** used in telemetry event names (e.g. `myView`). These are intentionally different values — do not confuse them.
 
 ### 5. Register in WebviewRegistry
 
-Add your React component to the registry. The key must match the `webviewName` passed to `WebviewController`'s constructor. The `WebviewName` type (exported from the same file) ensures compile-time validation of webview names.
+Add your React component to the registry. The key must match the `webviewName` passed to `openAppWebview`. The `WebviewName` type (exported from the same file) ensures compile-time validation of webview names.
 
 ```typescript
-// src/webviews/api/configuration/WebviewRegistry.ts
-import { MyView } from '../../myView/MyView';
+// src/webviews/_integration/WebviewRegistry.ts
+import { MyView } from '../myView/MyView';
 
 export const WebviewRegistry = {
   myViewName: MyView, // <-- add your entry
@@ -127,9 +143,9 @@ export type WebviewName = keyof typeof WebviewRegistry;
 | Base                           | When to use                                                                  | `ctx.telemetry`                             |
 | ------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------- |
 | `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | `undefined`                                 |
-| `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Guaranteed via `trpcToTelemetry` middleware |
+| `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Guaranteed via the telemetry middleware body |
 
-`trpcToTelemetry` (file-local, not exported) wraps the procedure in `callWithTelemetryAndErrorHandling`, auto-generating a telemetry event named `webviewStarter.rpc.{type}.{path}` and recording errors, duration, and abort status.
+`publicProcedureWithTelemetry` (defined in `_integration/trpc.ts`) wires the package's `telemetryMiddlewareBody` onto a `TelemetryRunner` you supply. The body times each call and records errors, duration, and abort status; the runner establishes the scope and dispatches the telemetry bag (the starter kit logs to the console; swap in `callWithTelemetryAndErrorHandling` for Application Insights).
 
 Access telemetry safely:
 
@@ -181,7 +197,7 @@ getData: publicProcedureWithTelemetry
 ### Client-side abort
 
 ```tsx
-const { trpcClient } = useTrpcClient();
+const trpcClient = useTrpcClient();
 const abortControllerRef = useRef<AbortController>();
 
 const runQuery = async () => {
@@ -193,7 +209,7 @@ const runQuery = async () => {
 };
 ```
 
-When `trpcToTelemetry` detects an aborted signal, it sets `telemetry.properties.aborted = 'true'` and `result = 'Canceled'` automatically.
+When the telemetry middleware body detects an aborted signal, it sets `telemetry.properties.aborted = 'true'` and `result = 'Canceled'` automatically.
 
 ## Subscriptions
 
@@ -230,11 +246,11 @@ sub.unsubscribe();
 ## Client-Side Hook Usage
 
 ```tsx
-import { useTrpcClient } from '../api/webview-client/useTrpcClient';
-import { useConfiguration } from '../api/webview-client/useConfiguration';
+import { useTrpcClient } from '../_integration/useTrpcClient';
+import { useConfiguration } from '@microsoft/vscode-ext-webview/react';
 
 export const MyComponent = () => {
-  const { trpcClient } = useTrpcClient();
+  const trpcClient = useTrpcClient();
   const config = useConfiguration<MyViewConfig>();
 
   useEffect(() => {
@@ -243,13 +259,13 @@ export const MyComponent = () => {
 };
 ```
 
-`useConfiguration<T>()` retrieves the initial config passed to `WebviewController` constructor (serialized via `encodeURIComponent(JSON.stringify(...))`).
+`useConfiguration<T>()` retrieves the initial config passed to `openAppWebview` (serialized via `encodeURIComponent(JSON.stringify(...))`).
 
 ## Common Pitfalls
 
 - **Never use `any`** in procedure context casts — use `WithTelemetry<RouterContext>` or `RouterContext`
 - **Always prefer `publicProcedureWithTelemetry`** unless you have a specific reason not to
 - **Always check `myCtx.signal?.aborted`** in long-running loops — not checking causes wasted work after client cancels
-- **Do not mutate the shared `context` object** — `WebviewController` clones it per-operation already, but router code should treat `ctx` as read-only
+- **Do not mutate the shared `context` object** — the framework's dispatcher clones it per-operation already, but router code should treat `ctx` as read-only
 - **Input validation uses `zod`** — always define `.input(z.object({...}))` for type safety
 - **The `commonRouter`** handles cross-cutting concerns (error reporting, telemetry events, surveys, URL opening) — do not duplicate these in view-specific routers

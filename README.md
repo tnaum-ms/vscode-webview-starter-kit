@@ -62,15 +62,21 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 
 ## Project Structure
 
-| Folder                | Purpose                                        |
-| --------------------- | ---------------------------------------------- |
-| `src/`                | Extension host source code                     |
-| `src/webviews/`       | React webview components                       |
-| `src/webviews/api/`   | Type-safe RPC infrastructure (server + client) |
-| `src/webviews/theme/` | Adaptive theming system                        |
-| `src/webviews/demo/`  | Demo webview views                             |
-| `src/commands/`       | Command handlers                               |
-| `l10n/`               | Localization bundles                           |
+| Folder                        | Purpose                                                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `src/`                        | Extension host source code                                                                                         |
+| `src/webviews/`               | React webview components                                                                                           |
+| `src/webviews/_integration/`  | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
+| `src/webviews/theme/`         | Adaptive theming system                                                                                            |
+| `src/webviews/demo/`          | Demo webview views                                                                                                 |
+| `src/commands/`               | Command handlers                                                                                                   |
+| `l10n/`                       | Localization bundles                                                                                               |
+
+> The type-safe RPC transport (tRPC over `postMessage`), the panel facade, and
+> the React hooks are provided by the **`@microsoft/vscode-ext-webview`** package.
+> If you cloned an earlier version of this kit that carried a local
+> `src/webviews/api/` copy, see [migration.md](migration.md) for how to move to
+> the package.
 
 ## Development
 
@@ -140,7 +146,7 @@ The project uses **two separate webpack configurations**: one for the extension 
 
 ### tRPC over postMessage
 
-VS Code webviews communicate with the extension host through `window.postMessage`. This project wraps that raw messaging channel with tRPC using a custom link adapter (`vscodeLink.ts`), giving you:
+VS Code webviews communicate with the extension host through `window.postMessage`. The [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package wraps that raw messaging channel with tRPC using a custom link adapter (`vscodeLink`), giving you:
 
 - Full TypeScript type inference from router definition to React component
 - Automatic serialization and deserialization
@@ -155,7 +161,7 @@ VS Code webviews communicate with the extension host through `window.postMessage
 
 ### Content Security Policy
 
-`WebviewController` generates a strict CSP header for each webview panel. Only resources from the extension's own directory and the webview's `cspSource` are allowed, following [VS Code's security best practices](https://code.visualstudio.com/docs/extensions/webview#_security).
+The framework's `WebviewController` generates a strict CSP header for each webview panel. Only resources from the extension's own directory and the webview's `cspSource` are allowed, following [VS Code's security best practices](https://code.visualstudio.com/docs/extensions/webview#_security).
 
 ## Copilot Skills
 
@@ -186,93 +192,38 @@ When creating a new webview manually, these are the files and registrations invo
 1. Create a new folder under `src/webviews/demo/yourView/`
 2. Add a React component (`YourView.tsx`)
 3. Add a tRPC router (`yourViewRouter.ts`)
-4. Add a controller (`yourViewController.ts`) that extends `WebviewController`
+4. Add a panel factory (`yourViewController.ts`) that calls `openAppWebview`
 5. Register the component in `WebviewRegistry.ts`
 6. Wire the router into `appRouter.ts`
 7. Add a command handler (`src/commands/openYourView.ts`) and register it in `extension.ts` and `package.json`
 
 ## Advanced
 
-### Sharing a single tRPC client across components
+### The tRPC client is a per-webview singleton
 
-By default, every component that calls `useTrpcClient()` receives its own tRPC client instance. The instance is stable across re-renders (via `useMemo`), but separate components hold separate clients.
-
-**This is intentional.** It keeps each component fully self-contained: a developer can open any file, see the `useTrpcClient()` call, `Ctrl+Click` into it, and understand the entire communication pipeline without tracing through a provider hierarchy. For starter kits and views with a handful of components this is the recommended approach.
-
-However, if your view grows beyond **~10 components** that each create their own client, you may want to share a single instance via React Context instead.
-
-#### Per-component client (current approach)
+`useTrpcClient()` (from `@microsoft/vscode-ext-webview/react`, re-exported
+typed via `src/webviews/_integration/useTrpcClient.ts`) returns the client
+**directly** and shares a single instance across every component in a webview:
 
 ```tsx
-// Each component creates its own client
 export const MyComponent: React.FC = () => {
-  const { trpcClient } = useTrpcClient();
+  const trpcClient = useTrpcClient();
   // ...
 };
 ```
 
-| Pros                                               | Cons                                                     |
-| -------------------------------------------------- | -------------------------------------------------------- |
-| Zero boilerplate, one import, one line             | Creates N client instances for N components              |
-| Each file is self-contained and easy to understand | Each instance registers its own `message` event listener |
-| No provider ordering to remember                   | Harder to apply global client configuration changes      |
-| Copy-paste friendly for new developers             |                                                          |
+Because the client (and its single `message` listener) is shared per webview,
+there is no provider tree to wire up and no per-component client fan-out to
+worry about — every component that calls the hook receives the same instance,
+and cross-cutting observers see every call.
 
-#### Shared client via Context (alternative)
-
-Create a context that holds the client and a provider that creates it once:
-
-```tsx
-// TrpcContext.tsx
-import { createContext, useContext, useMemo } from 'react';
-import { createTRPCClient, loggerLink } from '@trpc/client';
-import { WebviewContext } from '../WebviewContext';
-import { vscodeLink } from './vscodeLink';
-import type { AppRouter } from '../configuration/appRouter';
-import type { CreateTRPCClient } from '@trpc/client';
-
-const TrpcContext = createContext<CreateTRPCClient<AppRouter>>({} as CreateTRPCClient<AppRouter>);
-
-export const TrpcProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { vscodeApi } = useContext(WebviewContext);
-
-  const trpcClient = useMemo(
-    () =>
-      createTRPCClient<AppRouter>({
-        links: [
-          loggerLink(),
-          vscodeLink({
-            /* send/onReceive setup */
-          }),
-        ],
-      }),
-    [vscodeApi],
-  );
-
-  return <TrpcContext.Provider value={trpcClient}>{children}</TrpcContext.Provider>;
-};
-
-export const useTrpcClient = () => useContext(TrpcContext);
-```
-
-Then wrap your view tree:
-
-```tsx
-<WithWebviewContext vscodeApi={vscodeApi}>
-  <TrpcProvider>
-    <Component />
-  </TrpcProvider>
-</WithWebviewContext>
-```
-
-| Pros                                                 | Cons                                                           |
-| ---------------------------------------------------- | -------------------------------------------------------------- |
-| Single client instance and single `message` listener | Requires a new provider wrapping the component tree            |
-| Central place to configure or swap the client        | More indirection; developers must trace the provider hierarchy |
-| Follows the same pattern as `WebviewContext`         | Extra file to create and maintain                              |
-| Scales well to many components                       | Provider ordering mistakes can cause hard-to-debug issues      |
-
-Choose the approach that fits the complexity of your view. For most webviews the per-component hook is simpler and sufficient.
+For webview-wide observation of query/mutation outcomes (success, error,
+aborted), subscribe through `useRpcEvents()` from
+`@microsoft/vscode-ext-webview/react` rather than wrapping every call site. To
+log every call to the webview devtools console, pass `enableRpcLogging` to
+`WithWebviewContext`. See the package's
+[README](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) and
+ADVANCED.md for the full observability surface.
 
 ## FAQ
 
@@ -302,20 +253,23 @@ Install the package normally with `npm install`. If the package is used only in 
 - **Webview debugging requires DevTools.** VS Code breakpoints do not work inside webview code. Use the browser Developer Tools (`Ctrl+Shift+I` in the Extension Host window) to inspect and debug.
 - **Extension host changes need a restart.** Hot reloading applies only to webview code. Changes to extension host files (routers, controllers, commands) require restarting the Extension Development Host (`Ctrl+Shift+F5`).
 
-## Future Work
+## Published npm Package
 
-### Publishing as an npm Package
+This starter kit's core webview infrastructure — the tRPC messaging layer, the
+webview controller / panel facade, and the React hooks — now ships as a
+standalone npm package:
+[`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview).
+This repository is the canonical **all-in** (React + tRPC + webview) reference
+consumer of that package. Teams can adopt the patterns by installing the package
+rather than forking or copying the source.
 
-We would like to provide this starter kit's core infrastructure — the tRPC messaging layer, adaptive theming system, and webview controller — as a standalone **npm package** that can be installed into any VS Code extension project. This would let teams adopt the patterns without forking or copying the source.
+If you cloned an earlier version of this kit that carried a local
+`src/webviews/api/` copy of the transport, see [migration.md](migration.md) for a
+step-by-step guide to moving onto the package.
 
-The main challenge is the current **webpack complexity**. The dual-build setup (extension host + webview) and the tight coupling between webpack configuration and the runtime make it non-trivial to extract a cleanly consumable library. Key areas that need work include:
-
-- **Decoupling the build tooling** from the library code so consumers can use their own bundler configuration.
-- **Defining a clear public API surface** for the tRPC link, webview controller, and theme provider.
-- **Providing flexible entry points** that work with different bundlers (webpack, esbuild, vite, etc.).
-- **Documenting integration steps** for adding the package to an existing extension project.
-
-Contributions in this area are very welcome! If you're interested in helping, please open an issue or submit a pull request.
+The adaptive theming system (`DynamicThemeProvider`) is intentionally **not**
+part of the package — theming and other UX policy stay consumer-owned. It
+remains in this repository under `src/webviews/theme/`.
 
 ## License
 

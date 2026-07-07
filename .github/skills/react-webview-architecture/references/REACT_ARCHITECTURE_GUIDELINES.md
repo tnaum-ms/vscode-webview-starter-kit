@@ -629,9 +629,9 @@ trpcClient.common.reportEvent
 The webview rendering pipeline starts in `index.tsx`:
 
 ```tsx
-import { WebviewRegistry } from './api/configuration/WebviewRegistry';
+import { WithWebviewContext } from '@microsoft/vscode-ext-webview/react';
+import { WebviewRegistry } from './_integration/WebviewRegistry';
 import { DynamicThemeProvider } from './theme/DynamicThemeProvider';
-import { WithWebviewContext } from './WebviewContext';
 
 export function render<V extends ViewKey>(key: V, vscodeApi: WebviewApi<WebviewState>, rootId = 'root'): void {
   l10n.config({ contents: (globalThis.l10n_bundle as l10nJsonFormat) ?? {} });
