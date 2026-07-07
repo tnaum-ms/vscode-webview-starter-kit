@@ -62,15 +62,15 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 
 ## Project Structure
 
-| Folder                        | Purpose                                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `src/`                        | Extension host source code                                                                                         |
-| `src/webviews/`               | React webview components                                                                                           |
-| `src/webviews/_integration/`  | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
-| `src/webviews/theme/`         | Adaptive theming system                                                                                            |
-| `src/webviews/demo/`          | Demo webview views                                                                                                 |
-| `src/commands/`               | Command handlers                                                                                                   |
-| `l10n/`                       | Localization bundles                                                                                               |
+| Folder                       | Purpose                                                                                                                                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/`                       | Extension host source code                                                                                                                                                                   |
+| `src/webviews/`              | React webview components                                                                                                                                                                     |
+| `src/webviews/_integration/` | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
+| `src/webviews/theme/`        | Adaptive theming system                                                                                                                                                                      |
+| `src/webviews/demo/`         | Demo webview views                                                                                                                                                                           |
+| `src/commands/`              | Command handlers                                                                                                                                                                             |
+| `l10n/`                      | Localization bundles                                                                                                                                                                         |
 
 > The type-safe RPC transport (tRPC over `postMessage`), the panel facade, and
 > the React hooks are provided by the **`@microsoft/vscode-ext-webview`** package.
@@ -270,6 +270,17 @@ step-by-step guide to moving onto the package.
 The adaptive theming system (`DynamicThemeProvider`) is intentionally **not**
 part of the package — theming and other UX policy stay consumer-owned. It
 remains in this repository under `src/webviews/theme/`.
+
+## Contributors
+
+This starter kit and the `@microsoft/vscode-ext-webview` package it builds on were a team effort:
+
+- [**tnaum-ms**](https://github.com/tnaum-ms) — assembled the starter kit, built the tRPC integration, and built and shaped the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) npm package.
+- [**bk201-**](https://github.com/bk201-) — built the dynamic theming system and, with sevoku, test-drove the package in the [vscode-cosmosdb](https://github.com/microsoft/vscode-cosmosdb) extension, helping show the path toward a more modular design.
+- [**guanzhousongmicrosoft**](https://github.com/guanzhousongmicrosoft) — built the npm release pipelines that publish the package.
+- [**sevoku**](https://github.com/sevoku) — with bk201-, test-drove the package in [vscode-cosmosdb](https://github.com/microsoft/vscode-cosmosdb), helping surface the modular direction.
+
+Thanks to everyone who contributed ideas, reviews, and feedback along the way.
 
 ## License
 
