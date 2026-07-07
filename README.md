@@ -178,23 +178,27 @@ With these skills in place, you can ask Copilot to create a new webview, add a t
 
 The Copilot skills described above understand the full process for creating webviews. When you ask GitHub Copilot to create a new webview, the skills guide it through the entire process automatically.
 
-For a complete, step-by-step walkthrough, see [PR #1 — Add Basic View](https://github.com/tnaum-ms/vscode-webview-starter-kit/pull/1). It builds up a new webview across four incremental commits, each demonstrating a single step:
+To learn the pattern yourself — or to see exactly what each step touches — the repository history contains a **worked, commit-by-commit tutorial** that builds the demo **Basic View** from nothing. Start from the [baseline commit](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/4619769cc4e0098bcb38c6e5efc3f0f3740d74ee) (the repo with only the Main View), then read the four step commits below in order. Each is small, self-contained, and compiles and passes tests on its own:
 
-1. **Scaffold** — Create the component (`BasicView.tsx`), controller, empty router, styles, and register in `WebviewRegistry` + `appRouter`
-2. **Command & navigation** — Add a VS Code command to open the view, register it in `package.json`, and add a link from the Main View
-3. **Client-side interaction** — Add a button and label using local React state (`useState`)
-4. **Extension host communication** — Add a `hello` tRPC query to the router and wire the button to call it
+| Step | Commit | What it adds | Key files |
+| ---- | ------ | ------------ | --------- |
+| **1. Scaffold** | [`af01593`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/af0159369f2d54d14c224e858d6763709d9a26cf) | The component, styles, an empty router, and registration so the view can render. | `demo/basicView/BasicView.tsx`, `basicView.scss`, `basicViewController.ts`, `basicViewRouter.ts`; register in `_integration/WebviewRegistry.ts` + `_integration/appRouter.ts` |
+| **2. Command & navigation** | [`9d8a827`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/9d8a8273e02bd834d106418216f4e687a2f3cd8c) | A VS Code command to open the view (palette + `package.json`), plus a link from the Main View that opens it through a tRPC mutation. | `commands/openBasicView.ts`, `extension.ts`, `package.json`, `mainView/mainViewRouter.ts`, `mainView/MainView.tsx` |
+| **3. Client-side interaction** | [`939a497`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/939a497fc219407eb6352a107d82f7ae393ab40a) | A button and a message rendered from local React state (`useState`) — no extension-host round-trip yet. | `demo/basicView/BasicView.tsx`, `basicView.scss` |
+| **4. Extension host communication** | [`328873e`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/328873effedaec68572dd9998b3637aa61256a3b) | A `hello` tRPC query on the router, with the button wired to call it and display the result. Adds a router unit test. | `demo/basicView/basicViewRouter.ts`, `BasicView.tsx`, `_integration/appRouter.test.ts` |
+
+Read in order, the four commits show the whole data path come together: **register → open → local state → typed tRPC call**. The end state of Step 4 is exactly the Basic View that ships in this repository.
 
 ### Typical steps
 
-When creating a new webview manually, these are the files and registrations involved:
+When creating a new webview manually, these are the files and registrations involved (the same ones the tutorial commits above touch):
 
 1. Create a new folder under `src/webviews/demo/yourView/`
 2. Add a React component (`YourView.tsx`)
 3. Add a tRPC router (`yourViewRouter.ts`)
 4. Add a panel factory (`yourViewController.ts`) that calls `openAppWebview`
-5. Register the component in `WebviewRegistry.ts`
-6. Wire the router into `appRouter.ts`
+5. Register the component in `_integration/WebviewRegistry.ts`
+6. Wire the router into `_integration/appRouter.ts`
 7. Add a command handler (`src/commands/openYourView.ts`) and register it in `extension.ts` and `package.json`
 
 ## Advanced
