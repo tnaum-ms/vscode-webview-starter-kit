@@ -71,6 +71,7 @@
   "Option C": "Option C",
   "Outline": "Outline",
   "Press Escape to exit editor": "Press Escape to exit editor",
+  "Press Me": "Press Me",
   "Primary": "Primary",
   "Query": "Query",
   "Radio Group": "Radio Group",
@@ -122,5 +123,6 @@
   "URL": "URL",
   "VS Code Webview Starter Kit": "VS Code Webview Starter Kit",
   "Warning": "Warning",
-  "Webview Messaging": "Webview Messaging"
+  "Webview Messaging": "Webview Messaging",
+  "You pressed the button!": "You pressed the button!"
 }
