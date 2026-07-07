@@ -60,9 +60,10 @@
  * dispatches incoming messages to the tRPC router using `createCallerFactory`.
  */
 
-import { Tab, TabList } from '@fluentui/react-components';
+import { Link, Tab, TabList } from '@fluentui/react-components';
 import * as l10n from '@vscode/l10n';
 import { useState } from 'react';
+import { useTrpcClient } from '../../_integration/useTrpcClient';
 import { Header } from './components/Header';
 import { CommonFeaturesTab } from './components/tabs/CommonFeaturesTab/CommonFeaturesTab';
 import { MessagingTab } from './components/tabs/MessagingTab/MessagingTab';
@@ -79,11 +80,17 @@ const TAB_MONACO = 'monaco';
 export const MainView: React.FC = () => {
     // ─── Top-level tab state ────────────────────────────────────
     const [activeTab, setActiveTab] = useState<string>(TAB_MESSAGING);
+    const trpcClient = useTrpcClient();
 
     return (
         <div className="mainView">
             {/* ─── Header ──────────────────────────────────────── */}
             <Header />
+
+            {/* ─── Link to open the Basic View ─────────────────── */}
+            <Link onClick={() => void trpcClient.demo.mainView.openBasicView.mutate()}>
+                {l10n.t('Open Basic View →')}
+            </Link>
 
             {/* ─── Top-level tabs ──────────────────────────────── */}
             <TabList

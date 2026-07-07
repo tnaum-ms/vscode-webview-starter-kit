@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as l10n from '@vscode/l10n';
+import * as vscode from 'vscode';
 import { z } from 'zod';
 import { type BaseRouterContext } from '../../_integration/appRouter';
 import { publicProcedureWithTelemetry, router, type WithTelemetry } from '../../_integration/trpc';
@@ -25,6 +26,14 @@ export type RouterContext = BaseRouterContext & {
  * get type-safe access to `ctx.telemetry.properties` and `ctx.telemetry.measurements`.
  */
 export const mainViewRouter = router({
+    /**
+     * Opens the Basic View webview panel.
+     * Demonstrates how a procedure can trigger VS Code commands from the extension host.
+     */
+    openBasicView: publicProcedureWithTelemetry.mutation(async () => {
+        await vscode.commands.executeCommand('webviewStarter.openBasicView');
+    }),
+
     /**
      * Simple query — returns a greeting from the extension host.
      * Demonstrates the most basic tRPC query pattern.
