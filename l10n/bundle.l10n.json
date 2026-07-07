@@ -43,6 +43,7 @@
   "Event Name": "Event Name",
   "Feedback": "Feedback",
   "Hello from the extension host!": "Hello from the extension host!",
+  "Hello from the extension!": "Hello from the extension!",
   "https://example.com": "https://example.com",
   "Icon Buttons": "Icon Buttons",
   "Important": "Important",
@@ -123,6 +124,5 @@
   "URL": "URL",
   "VS Code Webview Starter Kit": "VS Code Webview Starter Kit",
   "Warning": "Warning",
-  "Webview Messaging": "Webview Messaging",
-  "You pressed the button!": "You pressed the button!"
+  "Webview Messaging": "Webview Messaging"
 }
