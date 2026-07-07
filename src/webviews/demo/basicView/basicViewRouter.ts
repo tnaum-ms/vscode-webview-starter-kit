@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as l10n from '@vscode/l10n';
-import { type BaseRouterContext } from '../../api/configuration/appRouter';
-import { publicProcedureWithTelemetry, router } from '../../api/extension-server/trpc';
+import { type BaseRouterContext } from '../../_integration/appRouter';
+import { publicProcedureWithTelemetry, router } from '../../_integration/trpc';
 
 export type RouterContext = BaseRouterContext;
 

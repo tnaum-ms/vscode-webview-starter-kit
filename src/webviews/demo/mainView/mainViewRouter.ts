@@ -6,8 +6,8 @@
 import * as l10n from '@vscode/l10n';
 import * as vscode from 'vscode';
 import { z } from 'zod';
-import { type BaseRouterContext } from '../../api/configuration/appRouter';
-import { publicProcedureWithTelemetry, router, type WithTelemetry } from '../../api/extension-server/trpc';
+import { type BaseRouterContext } from '../../_integration/appRouter';
+import { publicProcedureWithTelemetry, router, type WithTelemetry } from '../../_integration/trpc';
 
 export type RouterContext = BaseRouterContext & {
     extensionVersion: string;
