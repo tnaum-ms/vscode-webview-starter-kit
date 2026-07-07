@@ -190,9 +190,9 @@ Animations: `Collapse` from `@fluentui/react-motion-components-preview`
 
 ## Custom Hooks
 
-| Hook                                  | Location                                 | Purpose                                                                                      |
-| ------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `useSelectiveContextMenuPrevention()` | `src/webviews/utils/`                    | Prevents browser context menu everywhere except Monaco editors. Call once in top-level view. |
+| Hook                                  | Location              | Purpose                                                                                      |
+| ------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------- |
+| `useSelectiveContextMenuPrevention()` | `src/webviews/utils/` | Prevents browser context menu everywhere except Monaco editors. Call once in top-level view. |
 
 ## Conditional Rendering Patterns
 

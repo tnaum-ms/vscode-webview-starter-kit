@@ -24,15 +24,15 @@ useTrpcClient() hook                      openWebview / WebviewController
 
 **Key files** (read as needed for implementation details):
 
-| File                                            | Purpose                                                                                    |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `src/webviews/_integration/trpc.ts`             | tRPC init (`initWebviewTrpc`), `publicProcedure`, `publicProcedureWithTelemetry`, telemetry runner |
-| `src/webviews/_integration/appRouter.ts`        | Root router bundling all view routers + `commonRouter`; flavoured `BaseRouterContext`      |
-| `src/webviews/_integration/openAppWebview.ts`   | Preset over the package's `openWebview` factory (fixed wiring: router, `trpc`, layout)     |
-| `src/webviews/_integration/useTrpcClient.ts`    | Thin wrapper over the package's `useTrpcClient`, pre-typed to `AppRouter`                   |
-| `src/webviews/_integration/WebviewRegistry.ts`  | Maps webview names → React components; source of the `WebviewName` union                   |
-| `@microsoft/vscode-ext-webview/host`            | `openWebview`, `WebviewController`, `telemetryMiddlewareBody`, `TelemetryRunner` (package)  |
-| `@microsoft/vscode-ext-webview/webview`         | `vscodeLink`, `errorLink`, `connectTrpc` — the transport (package)                         |
+| File                                           | Purpose                                                                                            |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `src/webviews/_integration/trpc.ts`            | tRPC init (`initWebviewTrpc`), `publicProcedure`, `publicProcedureWithTelemetry`, telemetry runner |
+| `src/webviews/_integration/appRouter.ts`       | Root router bundling all view routers + `commonRouter`; flavoured `BaseRouterContext`              |
+| `src/webviews/_integration/openAppWebview.ts`  | Preset over the package's `openWebview` factory (fixed wiring: router, `trpc`, layout)             |
+| `src/webviews/_integration/useTrpcClient.ts`   | Thin wrapper over the package's `useTrpcClient`, pre-typed to `AppRouter`                          |
+| `src/webviews/_integration/WebviewRegistry.ts` | Maps webview names → React components; source of the `WebviewName` union                           |
+| `@microsoft/vscode-ext-webview/host`           | `openWebview`, `WebviewController`, `telemetryMiddlewareBody`, `TelemetryRunner` (package)         |
+| `@microsoft/vscode-ext-webview/webview`        | `vscodeLink`, `errorLink`, `connectTrpc` — the transport (package)                                 |
 
 ## Creating a New Router
 
@@ -140,9 +140,9 @@ export type WebviewName = keyof typeof WebviewRegistry;
 
 ## Telemetry: `publicProcedure` vs `publicProcedureWithTelemetry`
 
-| Base                           | When to use                                                                  | `ctx.telemetry`                             |
-| ------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------- |
-| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | `undefined`                                 |
+| Base                           | When to use                                                                  | `ctx.telemetry`                              |
+| ------------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | `undefined`                                  |
 | `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Guaranteed via the telemetry middleware body |
 
 `publicProcedureWithTelemetry` (defined in `_integration/trpc.ts`) wires the package's `telemetryMiddlewareBody` onto a `TelemetryRunner` you supply. The body times each call and records errors, duration, and abort status; the runner establishes the scope and dispatches the telemetry bag (the starter kit logs to the console; swap in `callWithTelemetryAndErrorHandling` for Application Insights).

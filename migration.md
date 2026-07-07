@@ -44,12 +44,12 @@ of your app shell.
 
 ## 3. The four entry points
 
-| Import from | Side | Contents you will use |
-| --- | --- | --- |
-| `@microsoft/vscode-ext-webview` | shared (no `vscode`, no React) | `initWebviewTrpc`, `BaseRouterContext` |
-| `@microsoft/vscode-ext-webview/host` | extension host (Node) | `openWebview`, `WebviewController`, `telemetryMiddlewareBody`, `TelemetryRunner`, `ProcedureTelemetry`, `WithTelemetry`, `getInvocationSignal`, `consoleProcedureLogger` |
-| `@microsoft/vscode-ext-webview/webview` | webview (any framework) | `connectTrpc`, `vscodeLink`, `errorLink` |
-| `@microsoft/vscode-ext-webview/react` | webview (React) | `useTrpcClient`, `useConfiguration`, `WithWebviewContext`, `WebviewState`, `type TrpcClient` |
+| Import from                             | Side                           | Contents you will use                                                                                                                                                    |
+| --------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@microsoft/vscode-ext-webview`         | shared (no `vscode`, no React) | `initWebviewTrpc`, `BaseRouterContext`                                                                                                                                   |
+| `@microsoft/vscode-ext-webview/host`    | extension host (Node)          | `openWebview`, `WebviewController`, `telemetryMiddlewareBody`, `TelemetryRunner`, `ProcedureTelemetry`, `WithTelemetry`, `getInvocationSignal`, `consoleProcedureLogger` |
+| `@microsoft/vscode-ext-webview/webview` | webview (any framework)        | `connectTrpc`, `vscodeLink`, `errorLink`                                                                                                                                 |
+| `@microsoft/vscode-ext-webview/react`   | webview (React)                | `useTrpcClient`, `useConfiguration`, `WithWebviewContext`, `WebviewState`, `type TrpcClient`                                                                             |
 
 Import-side rules the split enforces: `.` pulls in neither `vscode` nor React;
 `/webview` pulls in no React; `/react` is the only React entry; `/host` is the
@@ -63,7 +63,7 @@ is why webview code imports the router **type-only**: `import type { AppRouter }
 This is the consumer-owned glue layer. The underscore prefix sorts it above
 feature folders in the explorer — the conventional "infrastructure, not feature
 code" signal. Create the following files (all are present in this repo under
-[src/webviews/_integration/](src/webviews/_integration/)).
+[src/webviews/\_integration/](src/webviews/_integration/)).
 
 ### `configuration.ts` — one place for runtime knobs
 
@@ -74,16 +74,16 @@ host, bundle layout, telemetry namespace) into a single `WEBVIEW_CONFIG` object.
 const TELEMETRY_NAMESPACE = 'webviewStarter';
 
 export const WEBVIEW_CONFIG = {
-    telemetry: {
-        rpcEventPrefix: `${TELEMETRY_NAMESPACE}.rpc`,
-        webviewEventPrefix: `${TELEMETRY_NAMESPACE}.webview.event`,
-        webviewErrorPrefix: `${TELEMETRY_NAMESPACE}.webview.error`,
-    },
-    bundle: {
-        bundled: { dir: '', file: 'views.js' },
-        dev: { dir: 'out/src/webviews', file: 'index.js' },
-    },
-    devServerHost: 'http://localhost:18080',
+  telemetry: {
+    rpcEventPrefix: `${TELEMETRY_NAMESPACE}.rpc`,
+    webviewEventPrefix: `${TELEMETRY_NAMESPACE}.webview.event`,
+    webviewErrorPrefix: `${TELEMETRY_NAMESPACE}.webview.error`,
+  },
+  bundle: {
+    bundled: { dir: '', file: 'views.js' },
+    dev: { dir: 'out/src/webviews', file: 'index.js' },
+  },
+  devServerHost: 'http://localhost:18080',
 } as const;
 ```
 
@@ -98,11 +98,11 @@ semantics entirely in your hands.
 ```ts
 import { initWebviewTrpc, type BaseRouterContext as FrameworkBaseRouterContext } from '@microsoft/vscode-ext-webview';
 import {
-    getInvocationSignal,
-    telemetryMiddlewareBody,
-    type ProcedureTelemetry,
-    type TelemetryRunner,
-    type WithTelemetry as FrameworkWithTelemetry,
+  getInvocationSignal,
+  telemetryMiddlewareBody,
+  type ProcedureTelemetry,
+  type TelemetryRunner,
+  type WithTelemetry as FrameworkWithTelemetry,
 } from '@microsoft/vscode-ext-webview/host';
 
 const trpc = initWebviewTrpc<FrameworkBaseRouterContext>();
@@ -111,23 +111,23 @@ const { publicProcedure, router, createCallerFactory } = trpc;
 export type WithTelemetry<T extends { telemetry?: unknown }> = FrameworkWithTelemetry<T, ProcedureTelemetry>;
 
 const consoleTelemetryRunner: TelemetryRunner = {
-    async run(invocation, execute) {
-        const telemetry: ProcedureTelemetry = { properties: {}, measurements: {} };
-        // The body records duration + the Canceled/Failed outcome into `telemetry`.
-        const result = await execute(telemetry);
-        if (getInvocationSignal(invocation.ctx)?.aborted) {
-            telemetry.properties.aborted = 'true';
-        }
-        console.log(
-            `[telemetry] ${invocation.type} ${invocation.path} (${telemetry.measurements.durationMs ?? 0}ms)`,
-            telemetry.properties,
-        );
-        return result;
-    },
+  async run(invocation, execute) {
+    const telemetry: ProcedureTelemetry = { properties: {}, measurements: {} };
+    // The body records duration + the Canceled/Failed outcome into `telemetry`.
+    const result = await execute(telemetry);
+    if (getInvocationSignal(invocation.ctx)?.aborted) {
+      telemetry.properties.aborted = 'true';
+    }
+    console.log(
+      `[telemetry] ${invocation.type} ${invocation.path} (${telemetry.measurements.durationMs ?? 0}ms)`,
+      telemetry.properties,
+    );
+    return result;
+  },
 };
 
 export const publicProcedureWithTelemetry = publicProcedure.use((opts) =>
-    telemetryMiddlewareBody(opts, consoleTelemetryRunner),
+  telemetryMiddlewareBody(opts, consoleTelemetryRunner),
 );
 
 // Single import location for per-view routers and the panel preset. Passing the
@@ -154,11 +154,16 @@ import { type BaseRouterContext as FrameworkBaseRouterContext } from '@microsoft
 import { publicProcedure, router } from './trpc';
 
 export type BaseRouterContext = FrameworkBaseRouterContext & {
-    webviewName: string;
+  webviewName: string;
 };
 
 // commonRouter + appRouter unchanged from your old copy…
-export const appRouter = router({ common: commonRouter, demo: { /* … */ } });
+export const appRouter = router({
+  common: commonRouter,
+  demo: {
+    /* … */
+  },
+});
 export type AppRouter = typeof appRouter;
 ```
 
@@ -181,7 +186,7 @@ import { useTrpcClient as useFrameworkTrpcClient, type TrpcClient } from '@micro
 import { type AppRouter } from './appRouter';
 
 export function useTrpcClient(): TrpcClient<AppRouter> {
-    return useFrameworkTrpcClient<AppRouter>();
+  return useFrameworkTrpcClient<AppRouter>();
 }
 ```
 
@@ -202,26 +207,26 @@ import { type WebviewName } from './WebviewRegistry';
 export type AppWebviewController<TConfiguration> = WebviewController<AppRouter, TConfiguration, BaseRouterContext>;
 
 export function openAppWebview<TConfiguration>(options: {
-    title: string;
-    webviewName: WebviewName;
-    config: TConfiguration;
-    context: BaseRouterContext;
-    viewColumn?: import('vscode').ViewColumn;
-    icon?: import('vscode').Uri | { light: import('vscode').Uri; dark: import('vscode').Uri };
+  title: string;
+  webviewName: WebviewName;
+  config: TConfiguration;
+  context: BaseRouterContext;
+  viewColumn?: import('vscode').ViewColumn;
+  icon?: import('vscode').Uri | { light: import('vscode').Uri; dark: import('vscode').Uri };
 }): AppWebviewController<TConfiguration> {
-    return openWebview<AppRouter, TConfiguration, BaseRouterContext>(ext.context, {
-        title: options.title,
-        viewType: options.webviewName,
-        router: appRouter,
-        trpc, // caller factory rides along — cannot be mismatched with `router`
-        context: options.context,
-        config: options.config,
-        sourceLayout: WEBVIEW_CONFIG.bundle,
-        devServerHost: WEBVIEW_CONFIG.devServerHost,
-        isBundled: !!ext.isBundle, // REQUIRED: selects bundle vs tsc layout
-        icon: options.icon,
-        viewColumn: options.viewColumn,
-    });
+  return openWebview<AppRouter, TConfiguration, BaseRouterContext>(ext.context, {
+    title: options.title,
+    viewType: options.webviewName,
+    router: appRouter,
+    trpc, // caller factory rides along — cannot be mismatched with `router`
+    context: options.context,
+    config: options.config,
+    sourceLayout: WEBVIEW_CONFIG.bundle,
+    devServerHost: WEBVIEW_CONFIG.devServerHost,
+    isBundled: !!ext.isBundle, // REQUIRED: selects bundle vs tsc layout
+    icon: options.icon,
+    viewColumn: options.viewColumn,
+  });
 }
 ```
 
@@ -385,15 +390,15 @@ Then do a manual smoke test: open each view and round-trip one tRPC call
 
 ### Rename map (local copy → package)
 
-| Old (local `api/`) | New |
-| --- | --- |
-| `api/extension-server/trpc.ts` → `initTRPC`, `router`, `publicProcedure`, `createCallerFactory` | `initWebviewTrpc<TContext>()` from `.` returns all of them |
-| `api/extension-server/trpc.ts` → inline `trpcToTelemetry` middleware | `telemetryMiddlewareBody` + a `TelemetryRunner` you supply (`/host`) |
-| `api/extension-server/trpc.ts` → `TelemetryContext`, `WithTelemetry` | `ProcedureTelemetry`, `WithTelemetry<T, TTelemetry>` from `/host` |
-| `api/extension-server/WebviewController.ts` | `WebviewController` / `openWebview` from `/host` |
-| `api/configuration/appRouter.ts` → `BaseRouterContext` | extend `BaseRouterContext` from `.` |
-| `api/configuration/appRouter.ts`, `WebviewRegistry.ts` | move to `_integration/` (consumer-owned) |
-| `api/webview-client/vscodeLink.ts` | `vscodeLink` from `/webview` (used internally by the hooks) |
-| `api/webview-client/useTrpcClient.ts` → `{ trpcClient }` | `useTrpcClient()` returns the client directly (`/react`) |
-| `api/webview-client/useConfiguration.ts` | `useConfiguration` from `/react` |
-| `src/webviews/WebviewContext.tsx` | `WithWebviewContext`, `WebviewState` from `/react` |
+| Old (local `api/`)                                                                              | New                                                                  |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `api/extension-server/trpc.ts` → `initTRPC`, `router`, `publicProcedure`, `createCallerFactory` | `initWebviewTrpc<TContext>()` from `.` returns all of them           |
+| `api/extension-server/trpc.ts` → inline `trpcToTelemetry` middleware                            | `telemetryMiddlewareBody` + a `TelemetryRunner` you supply (`/host`) |
+| `api/extension-server/trpc.ts` → `TelemetryContext`, `WithTelemetry`                            | `ProcedureTelemetry`, `WithTelemetry<T, TTelemetry>` from `/host`    |
+| `api/extension-server/WebviewController.ts`                                                     | `WebviewController` / `openWebview` from `/host`                     |
+| `api/configuration/appRouter.ts` → `BaseRouterContext`                                          | extend `BaseRouterContext` from `.`                                  |
+| `api/configuration/appRouter.ts`, `WebviewRegistry.ts`                                          | move to `_integration/` (consumer-owned)                             |
+| `api/webview-client/vscodeLink.ts`                                                              | `vscodeLink` from `/webview` (used internally by the hooks)          |
+| `api/webview-client/useTrpcClient.ts` → `{ trpcClient }`                                        | `useTrpcClient()` returns the client directly (`/react`)             |
+| `api/webview-client/useConfiguration.ts`                                                        | `useConfiguration` from `/react`                                     |
+| `src/webviews/WebviewContext.tsx`                                                               | `WithWebviewContext`, `WebviewState` from `/react`                   |
