@@ -21,7 +21,6 @@ import { type BaseRouterContext as FrameworkBaseRouterContext } from '@microsoft
 import * as vscode from 'vscode';
 import { z } from 'zod';
 import { openUrl } from '../../utils/openUrl';
-import { basicViewRouter } from '../demo/basicView/basicViewRouter';
 import { mainViewRouter } from '../demo/mainView/mainViewRouter';
 import { WEBVIEW_CONFIG } from './configuration';
 import { publicProcedure, router } from './trpc';
@@ -131,7 +130,6 @@ const commonRouter = router({
 export const appRouter = router({
     common: commonRouter,
     demo: {
-        basicView: basicViewRouter,
         mainView: mainViewRouter,
     },
 });

@@ -30,11 +30,6 @@ describe('appRouter', () => {
     const createCaller = createCallerFactory(appRouter);
     const caller = createCaller({});
 
-    it('demo.basicView.hello returns a greeting from the extension host', async () => {
-        const result = await caller.demo.basicView.hello();
-        expect(result.message).toContain('Hello');
-    });
-
     it('demo.mainView.hello returns a greeting and an ISO timestamp', async () => {
         const result = await caller.demo.mainView.hello();
         expect(result.message).toContain('Hello');
