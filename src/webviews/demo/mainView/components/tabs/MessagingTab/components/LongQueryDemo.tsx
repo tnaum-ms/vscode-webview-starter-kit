@@ -16,7 +16,7 @@ import {
 import { ArrowClockwiseRegular, DismissRegular } from '@fluentui/react-icons';
 import * as l10n from '@vscode/l10n';
 import { useCallback, useRef, useState } from 'react';
-import { useTrpcClient } from '../../../../../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../../../../../_integration/useTrpcClient';
 
 type LongQueryResult = { result: string; completed: boolean; elapsedMs: number } | null;
 
@@ -41,7 +41,7 @@ export const LongQueryDemo: React.FC = () => {
      * @see vscodeLink.ts   — custom tRPC link that serializes calls to postMessage
      * @see appRouter.ts    — root router that bundles all view routers
      */
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
     const [longQueryResult, setLongQueryResult] = useState<LongQueryResult>(null);
     const [longQueryLoading, setLongQueryLoading] = useState(false);
     const longQueryAbortRef = useRef<AbortController | null>(null);

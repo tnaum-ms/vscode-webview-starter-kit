@@ -17,7 +17,7 @@ import {
 import { ErrorCircleRegular } from '@fluentui/react-icons';
 import * as l10n from '@vscode/l10n';
 import { useCallback, useState } from 'react';
-import { useTrpcClient } from '../../../../../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../../../../../_integration/useTrpcClient';
 
 type ErrorDemoResult = { success: boolean; message: string; timestamp: string } | null;
 
@@ -42,7 +42,7 @@ export const ErrorHandlingDemo: React.FC = () => {
      * @see vscodeLink.ts   — custom tRPC link that serializes calls to postMessage
      * @see appRouter.ts    — root router that bundles all view routers
      */
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
     const [shouldThrow, setShouldThrow] = useState(true);
     const [errorDemoResult, setErrorDemoResult] = useState<ErrorDemoResult>(null);
     const [errorDemoLoading, setErrorDemoLoading] = useState(false);

@@ -7,10 +7,10 @@ import { Badge, Body1, Button, Input, Label, Subtitle1 } from '@fluentui/react-c
 import { PulseRegular } from '@fluentui/react-icons';
 import * as l10n from '@vscode/l10n';
 import { useCallback, useState } from 'react';
-import { useTrpcClient } from '../../../../../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../../../../../_integration/useTrpcClient';
 
 export const ReportEventDemo: React.FC = () => {
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
     const [eventName, setEventName] = useState('buttonClicked');
     const [sent, setSent] = useState(false);
     const [lastResult, setLastResult] = useState<Record<string, unknown> | null>(null);

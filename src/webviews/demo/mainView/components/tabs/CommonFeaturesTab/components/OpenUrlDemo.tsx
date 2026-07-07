@@ -7,10 +7,10 @@ import { Badge, Body1, Button, Input, Label, Subtitle1 } from '@fluentui/react-c
 import { OpenRegular } from '@fluentui/react-icons';
 import * as l10n from '@vscode/l10n';
 import { useCallback, useState } from 'react';
-import { useTrpcClient } from '../../../../../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../../../../../_integration/useTrpcClient';
 
 export const OpenUrlDemo: React.FC = () => {
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
     const [url, setUrl] = useState('https://github.com/microsoft/vscode-documentdb');
 
     const handleOpenUrl = useCallback(async () => {

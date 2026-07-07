@@ -63,7 +63,7 @@
 import { Link, Tab, TabList } from '@fluentui/react-components';
 import * as l10n from '@vscode/l10n';
 import { useState } from 'react';
-import { useTrpcClient } from '../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../_integration/useTrpcClient';
 import { Header } from './components/Header';
 import { CommonFeaturesTab } from './components/tabs/CommonFeaturesTab/CommonFeaturesTab';
 import { MessagingTab } from './components/tabs/MessagingTab/MessagingTab';
@@ -80,7 +80,7 @@ const TAB_MONACO = 'monaco';
 export const MainView: React.FC = () => {
     // ─── Top-level tab state ────────────────────────────────────
     const [activeTab, setActiveTab] = useState<string>(TAB_MESSAGING);
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
 
     return (
         <div className="mainView">

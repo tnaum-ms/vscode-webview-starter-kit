@@ -6,12 +6,12 @@
 import { Body1, Button, Title1 } from '@fluentui/react-components';
 import * as l10n from '@vscode/l10n';
 import { useState } from 'react';
-import { useTrpcClient } from '../../api/webview-client/useTrpcClient';
+import { useTrpcClient } from '../../_integration/useTrpcClient';
 import './basicView.scss';
 
 export const BasicView: React.FC = () => {
     const [message, setMessage] = useState<string>('');
-    const { trpcClient } = useTrpcClient();
+    const trpcClient = useTrpcClient();
 
     const handlePress = async (): Promise<void> => {
         const result = await trpcClient.demo.basicView.hello.query();
