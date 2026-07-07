@@ -32,10 +32,6 @@ export async function activateInternal(
     const { openMainView } = await import('./commands/openMainView');
     context.subscriptions.push(vscode.commands.registerCommand('webviewStarter.openMainView', openMainView));
 
-    // Register the command to open the basic demo webview
-    const { openBasicView } = await import('./commands/openBasicView');
-    context.subscriptions.push(vscode.commands.registerCommand('webviewStarter.openBasicView', openBasicView));
-
     // Automatically open the main view on activation
     openMainView();
 }
