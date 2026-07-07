@@ -44,9 +44,9 @@ import { initWebviewTrpc, type BaseRouterContext as FrameworkBaseRouterContext }
 import {
     getInvocationSignal,
     telemetryMiddlewareBody,
+    type WithTelemetry as FrameworkWithTelemetry,
     type ProcedureTelemetry,
     type TelemetryRunner,
-    type WithTelemetry as FrameworkWithTelemetry,
 } from '@microsoft/vscode-ext-webview/host';
 
 /**
