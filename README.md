@@ -180,12 +180,12 @@ The Copilot skills described above understand the full process for creating webv
 
 To learn the pattern yourself — or to see exactly what each step touches — the repository history contains a **worked, commit-by-commit tutorial** that builds the demo **Basic View** from nothing. Start from the [baseline commit](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/4619769cc4e0098bcb38c6e5efc3f0f3740d74ee) (the repo with only the Main View), then read the four step commits below in order. Each is small, self-contained, and compiles and passes tests on its own:
 
-| Step | Commit | What it adds | Key files |
-| ---- | ------ | ------------ | --------- |
-| **1. Scaffold** | [`af01593`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/af0159369f2d54d14c224e858d6763709d9a26cf) | The component, styles, an empty router, and registration so the view can render. | `demo/basicView/BasicView.tsx`, `basicView.scss`, `basicViewController.ts`, `basicViewRouter.ts`; register in `_integration/WebviewRegistry.ts` + `_integration/appRouter.ts` |
-| **2. Command & navigation** | [`9d8a827`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/9d8a8273e02bd834d106418216f4e687a2f3cd8c) | A VS Code command to open the view (palette + `package.json`), plus a link from the Main View that opens it through a tRPC mutation. | `commands/openBasicView.ts`, `extension.ts`, `package.json`, `mainView/mainViewRouter.ts`, `mainView/MainView.tsx` |
-| **3. Client-side interaction** | [`939a497`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/939a497fc219407eb6352a107d82f7ae393ab40a) | A button and a message rendered from local React state (`useState`) — no extension-host round-trip yet. | `demo/basicView/BasicView.tsx`, `basicView.scss` |
-| **4. Extension host communication** | [`328873e`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/328873effedaec68572dd9998b3637aa61256a3b) | A `hello` tRPC query on the router, with the button wired to call it and display the result. Adds a router unit test. | `demo/basicView/basicViewRouter.ts`, `BasicView.tsx`, `_integration/appRouter.test.ts` |
+| Step                                | Commit                                                                                                              | What it adds                                                                                                                         | Key files                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Scaffold**                     | [`af01593`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/af0159369f2d54d14c224e858d6763709d9a26cf) | The component, styles, an empty router, and registration so the view can render.                                                     | `demo/basicView/BasicView.tsx`, `basicView.scss`, `basicViewController.ts`, `basicViewRouter.ts`; register in `_integration/WebviewRegistry.ts` + `_integration/appRouter.ts` |
+| **2. Command & navigation**         | [`9d8a827`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/9d8a8273e02bd834d106418216f4e687a2f3cd8c) | A VS Code command to open the view (palette + `package.json`), plus a link from the Main View that opens it through a tRPC mutation. | `commands/openBasicView.ts`, `extension.ts`, `package.json`, `mainView/mainViewRouter.ts`, `mainView/MainView.tsx`                                                            |
+| **3. Client-side interaction**      | [`939a497`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/939a497fc219407eb6352a107d82f7ae393ab40a) | A button and a message rendered from local React state (`useState`) — no extension-host round-trip yet.                              | `demo/basicView/BasicView.tsx`, `basicView.scss`                                                                                                                              |
+| **4. Extension host communication** | [`328873e`](https://github.com/tnaum-ms/vscode-webview-starter-kit/commit/328873effedaec68572dd9998b3637aa61256a3b) | A `hello` tRPC query on the router, with the button wired to call it and display the result. Adds a router unit test.                | `demo/basicView/basicViewRouter.ts`, `BasicView.tsx`, `_integration/appRouter.test.ts`                                                                                        |
 
 Read in order, the four commits show the whole data path come together: **register → open → local state → typed tRPC call**. The end state of Step 4 is exactly the Basic View that ships in this repository.
 
@@ -216,10 +216,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-Because the client (and its single `message` listener) is shared per webview,
-there is no provider tree to wire up and no per-component client fan-out to
-worry about — every component that calls the hook receives the same instance,
-and cross-cutting observers see every call.
+Because the client is shared per webview, there is no provider tree to wire up and no per-component client fan-out to worry about — every component that calls the hook receives the same instance, and cross-cutting observers see every call. (The transport itself registers one `window` `message` listener per in-flight operation and removes it when the call settles, so listeners scale with the number of concurrent calls, not with the number of components.)
 
 For webview-wide observation of query/mutation outcomes (success, error,
 aborted), subscribe through `useRpcEvents()` from
@@ -279,10 +276,10 @@ remains in this repository under `src/webviews/theme/`.
 
 This starter kit and the `@microsoft/vscode-ext-webview` package it builds on were a team effort:
 
-- [**tnaum-ms**](https://github.com/tnaum-ms) — assembled the starter kit, built the tRPC integration, and built and shaped the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) npm package.
-- [**bk201-**](https://github.com/bk201-) — built the dynamic theming system and, with sevoku, test-drove the package in the [vscode-cosmosdb](https://github.com/microsoft/vscode-cosmosdb) extension, helping show the path toward a more modular design.
-- [**guanzhousongmicrosoft**](https://github.com/guanzhousongmicrosoft) — built the npm release pipelines that publish the package.
-- [**sevoku**](https://github.com/sevoku) — with bk201-, test-drove the package in [vscode-cosmosdb](https://github.com/microsoft/vscode-cosmosdb), helping surface the modular direction.
+- [**tnaum-ms**](https://github.com/tnaum-ms) assembled the starter kit, built the tRPC integration, built and shaped the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) npm package, and now uses it in the [DocumentDB for VS Code](https://github.com/microsoft/vscode-documentdb) extension.
+- [**bk201-**](https://github.com/bk201-) built the dynamic theming system and, with sevoku, test-drove the package in the [Azure Cosmos DB for VS Code](https://github.com/microsoft/vscode-cosmosdb) extension, helping show the path toward a more modular design.
+- [**guanzhousongmicrosoft**](https://github.com/guanzhousongmicrosoft) built the npm release pipelines that publish the package.
+- [**sevoku**](https://github.com/sevoku) helped test-drive the package in [Azure Cosmos DB for VS Code](https://github.com/microsoft/vscode-cosmosdb) with bk201-, surfacing the modular direction.
 
 Thanks to everyone who contributed ideas, reviews, and feedback along the way.
 
