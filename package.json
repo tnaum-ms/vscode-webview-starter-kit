@@ -1,6 +1,6 @@
 {
   "name": "vscode-webview-starter-kit",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "publisher": "tnaum-ms",
   "displayName": "VS Code Webview Starter Kit",
   "description": "A reference app demonstrating VS Code webviews with tRPC, React, Fluent UI, and adaptive theming.",

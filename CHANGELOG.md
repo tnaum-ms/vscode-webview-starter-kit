@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+
+- **Updated `@microsoft/vscode-ext-webview` to 0.10.0** — telemetry now uses the generic `TelemetryRunner<TEnrichment>` contract and curried `telemetryMiddlewareBody`, with timing and outcome classification owned by the consumer runner.
+- **Refreshed the integration guidance** — documentation, Copilot instructions, skills, and source comments describe the current 0.10.0 API and its consumer-owned context enrichment model.
+- **Rebuilt the Basic View tutorial** — the baseline and four focused tutorial commits now demonstrate view creation on the 0.10.0 integration.
+
 ## 2.0.0
 
 - **Adopted the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package** — the tRPC transport, panel facade, and React hooks that previously lived in a local `src/webviews/api/` copy are now consumed from the published npm package. This repository is the canonical **all-in** (React + tRPC + webview) reference consumer.
