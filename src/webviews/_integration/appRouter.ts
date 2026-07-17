@@ -30,9 +30,13 @@ import { publicProcedure, router } from './trpc';
  * Starter-kit-flavoured router context. Extends the framework's
  * `BaseRouterContext` (from `@microsoft/vscode-ext-webview`, which already
  * declares `telemetry?` and `signal?`) with the fields every procedure in this
- * extension needs. Inheriting `telemetry?` / `signal?` keeps the context shape
+ * extension needs. Inheriting those optional slots keeps the context shape
  * in lock step with the framework: if the framework adds a field, it lands here
  * automatically without an edit in this file.
+ *
+ * The framework does not populate `telemetry` itself. Instrumented procedures
+ * use this repository's `WithTelemetry<T>` alias, which reflects the field
+ * contributed per call by `consoleTelemetryRunner`.
  *
  * The `signal?` slot inherited from the framework is populated by the
  * framework's `WebviewController` when handling incoming tRPC messages. Each

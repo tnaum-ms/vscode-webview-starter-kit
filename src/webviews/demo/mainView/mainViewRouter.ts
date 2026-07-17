@@ -23,7 +23,8 @@ export type RouterContext = BaseRouterContext & {
  * `@microsoft/vscode-azext-utils`).
  *
  * Inside procedure handlers, cast `ctx` to `WithTelemetry<RouterContext>` to
- * get type-safe access to `ctx.telemetry.properties` and `ctx.telemetry.measurements`.
+ * get type-safe access to the `telemetry` field contributed by this repository's
+ * telemetry runner.
  */
 export const mainViewRouter = router({
     /**

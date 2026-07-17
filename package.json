@@ -105,7 +105,7 @@
   "dependencies": {
     "@fluentui/react-components": "~9.72.3",
     "@fluentui/react-icons": "~2.0.313",
-    "@microsoft/vscode-ext-webview": "~0.9.1",
+    "@microsoft/vscode-ext-webview": "~0.10.0",
     "@monaco-editor/react": "~4.7.0",
     "@trpc/client": "~11.10.0",
     "@trpc/server": "~11.10.0",

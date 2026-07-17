@@ -30,9 +30,9 @@
  *     example `callWithTelemetryAndErrorHandling` from
  *     `@microsoft/vscode-azext-utils`) when you productionise.
  *   - `publicProcedureWithTelemetry`:
- *     `publicProcedure.use((opts) => telemetryMiddlewareBody(opts, consoleTelemetryRunner))`.
+ *     `publicProcedure.use(telemetryMiddlewareBody(consoleTelemetryRunner, options))`.
  *     Use this instead of `publicProcedure` when you want the call tracked.
- *   - `WithTelemetry<T>`: re-types the `telemetry` slot on `ctx` so procedure
+ *   - `WithTelemetry<T>`: adds the runner's `telemetry` enrichment to `ctx` so procedure
  *     code can read `ctx.telemetry.properties` / `ctx.telemetry.measurements`
  *     without an ad-hoc cast.
  *   - Re-exports of `publicProcedure`, `router`, `createCallerFactory`, and the
@@ -44,10 +44,10 @@ import { initWebviewTrpc, type BaseRouterContext as FrameworkBaseRouterContext }
 import {
     getInvocationSignal,
     telemetryMiddlewareBody,
-    type WithTelemetry as FrameworkWithTelemetry,
     type ProcedureTelemetry,
     type TelemetryRunner,
 } from '@microsoft/vscode-ext-webview/host';
+import { WEBVIEW_CONFIG } from './configuration';
 
 /**
  * The single tRPC instance for this extension, bound to the framework's
@@ -60,29 +60,29 @@ const trpc = initWebviewTrpc<FrameworkBaseRouterContext>();
 const { publicProcedure, router, createCallerFactory } = trpc;
 
 /**
- * Helper that transforms a context type to have a required (non-optional)
- * telemetry slot. Use with `publicProcedureWithTelemetry` to get type-safe
- * access to `ctx.telemetry` inside procedure handlers.
+ * Context enrichment contributed by `consoleTelemetryRunner`. Keep this field
+ * off the base router context so procedures built from plain `publicProcedure`
+ * cannot accidentally assume that telemetry middleware has run.
  *
  * The starter kit keeps the framework's minimal `ProcedureTelemetry` shape
- * (`{ properties; measurements }`). If you adopt a richer telemetry context
- * (for example `ITelemetryContext` from `@microsoft/vscode-azext-utils`), pass
- * it as the second type argument instead:
+ * (`{ properties; measurements }`). A richer integration can instead enrich
+ * the context with its own field, for example an `IActionContext`:
  *
  * ```ts
- * export type WithTelemetry<T extends { telemetry?: unknown }> =
- *     FrameworkWithTelemetry<T, ITelemetryContext>;
+ * export type WithTelemetry<T> = T & { actionContext: IActionContext };
  * ```
  */
-export type WithTelemetry<T extends { telemetry?: unknown }> = FrameworkWithTelemetry<T, ProcedureTelemetry>;
+export type WithTelemetry<T> = T & { telemetry: ProcedureTelemetry };
+
+type TelemetryEnrichment = { telemetry: ProcedureTelemetry };
 
 /**
  * Telemetry adapter for the framework's `telemetryMiddlewareBody`.
  *
- * The body owns the reusable orchestration (timing, `Canceled` / `Failed`
- * classification, error name + message) and populates the telemetry bag it
- * hands to `execute`. This runner establishes the scope and dispatches the
- * populated bag — here, to the console.
+ * The middleware body resolves the event id and delegates to this runner. The
+ * runner owns the telemetry scope, contributes the telemetry bag to `ctx`,
+ * classifies the result, and dispatches the populated bag — here, to the
+ * console.
  *
  * **To wire your own telemetry** (e.g. Application Insights via
  * `@microsoft/vscode-azext-utils`), replace the body of `run`:
@@ -90,43 +90,49 @@ export type WithTelemetry<T extends { telemetry?: unknown }> = FrameworkWithTele
  * ```ts
  * import { callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
  *
- * const runner: TelemetryRunner = {
- *     async run(invocation, execute) {
+ * const runner: TelemetryRunner<{ actionContext: IActionContext }> = {
+ *     async run(eventId, invocation, invoke) {
  *         const result = await callWithTelemetryAndErrorHandling(
- *             `${WEBVIEW_CONFIG.telemetry.rpcEventPrefix}.${invocation.type}.${invocation.path}`,
+ *             eventId,
  *             async (context) => {
  *                 context.errorHandling.suppressDisplay = true;
- *                 return execute(context.telemetry as unknown as ProcedureTelemetry);
+ *                 const middlewareResult = await invoke({ actionContext: context });
+ *                 const aborted = getInvocationSignal(invocation.ctx)?.aborted ?? false;
+ *                 if (aborted) context.telemetry.properties.result = 'Canceled';
+ *                 else if (!middlewareResult.ok && middlewareResult.error) {
+ *                     context.telemetry.properties.result = 'Failed';
+ *                     context.telemetry.properties.error = middlewareResult.error.name ?? '';
+ *                 }
+ *                 return middlewareResult;
  *             },
  *         );
- *         if (!result) throw new Error(`No telemetry result for ${invocation.path}`);
+ *         if (!result) throw new Error(`No telemetry result for ${eventId}`);
  *         return result;
  *     },
  * };
  * ```
  */
-const consoleTelemetryRunner: TelemetryRunner = {
-    async run(invocation, execute) {
+const consoleTelemetryRunner: TelemetryRunner<TelemetryEnrichment> = {
+    async run(eventId, invocation, invoke) {
         const telemetry: ProcedureTelemetry = { properties: {}, measurements: {} };
+        const startTime = performance.now();
 
-        // `execute` drives the procedure. The middleware body records duration
-        // and the `Canceled` / `Failed` outcome into `telemetry` before it
-        // resolves, so there is nothing extra to compute here.
-        const result = await execute(telemetry);
+        const result = await invoke({ telemetry });
+        telemetry.measurements.durationMs = performance.now() - startTime;
 
-        // Leave aborted calls classified as 'Canceled' by the body; we only
-        // read the populated bag out for logging.
         const aborted = getInvocationSignal(invocation.ctx)?.aborted ?? false;
         if (aborted) {
             telemetry.properties.aborted = 'true';
+            telemetry.properties.result = 'Canceled';
+        } else if (!result.ok && result.error) {
+            telemetry.properties.result = 'Failed';
+            telemetry.properties.error = result.error.name ?? '';
+            telemetry.properties.errorMessage = result.error.message ?? '';
         }
 
         // Default: log to the extension-host console. Replace this runner with
         // one that forwards `telemetry` to your analytics pipeline.
-        console.log(
-            `[telemetry] ${invocation.type} ${invocation.path} (${telemetry.measurements.durationMs ?? 0}ms)`,
-            telemetry.properties,
-        );
+        console.log(`[telemetry] ${eventId} (${telemetry.measurements.durationMs}ms)`, telemetry.properties);
 
         return result;
     },
@@ -139,8 +145,10 @@ const consoleTelemetryRunner: TelemetryRunner = {
  * tracked. The `telemetry` object is available on `ctx` inside your procedure
  * handlers (cast with `WithTelemetry<YourContext>`).
  */
-export const publicProcedureWithTelemetry = publicProcedure.use((opts) =>
-    telemetryMiddlewareBody(opts, consoleTelemetryRunner),
+export const publicProcedureWithTelemetry = publicProcedure.use(
+    telemetryMiddlewareBody(consoleTelemetryRunner, {
+        buildEventId: ({ type, path }) => `${WEBVIEW_CONFIG.telemetry.rpcEventPrefix}.${type}.${path}`,
+    }),
 );
 
 // Re-export the tRPC instance, the unprotected procedure builder, the router
