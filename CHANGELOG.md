@@ -2,9 +2,15 @@
 
 ## 2.1.0
 
-- **Updated `@microsoft/vscode-ext-webview` to 0.10.0** — telemetry now uses the generic `TelemetryRunner<TEnrichment>` contract and curried `telemetryMiddlewareBody`, with timing and outcome classification owned by the consumer runner.
-- **Refreshed the integration guidance** — documentation, Copilot instructions, skills, and source comments describe the current 0.10.0 API and its consumer-owned context enrichment model.
-- **Rebuilt the Basic View tutorial** — the baseline and four focused tutorial commits now demonstrate view creation on the 0.10.0 integration.
+### `@microsoft/vscode-ext-webview` 0.10.0
+
+- **Updated the webview API dependency to 0.10.0** — the starter kit now uses `@microsoft/vscode-ext-webview` `~0.10.0` as its supported integration baseline.
+- **Adopted generic telemetry context enrichment** — `TelemetryRunner<TEnrichment>` now contributes a consumer-defined object to procedure context, while the starter kit's `WithTelemetry<T>` alias exposes its plain telemetry bag only to instrumented procedures.
+- **Adopted the curried telemetry middleware** — `telemetryMiddlewareBody(runner, options)` is wired directly to `publicProcedure.use()`, with event IDs built from the starter kit's telemetry namespace.
+- **Moved telemetry policy into the runner** — the consumer runner now owns duration measurement and success, failure, and cancellation classification; the package middleware resolves the event ID, merges context enrichment, and returns the procedure result unchanged.
+- **Aligned with the current public API** — documentation no longer relies on the removed package-level `WithTelemetry` helper and covers the 0.10.0 `mergeRouters` and `AnyRouter` exports.
+- **Refreshed all integration guidance** — the README, adoption guide, Copilot instructions, skills, and source comments now describe only the current 0.10.0 architecture.
+- **Rebuilt the Basic View tutorial** — a new baseline and four focused commits demonstrate scaffolding, navigation, local interaction, and typed extension-host communication on the 0.10.0 integration.
 
 ## 2.0.0
 
