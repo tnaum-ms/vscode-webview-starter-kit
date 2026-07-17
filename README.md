@@ -73,10 +73,9 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 | `l10n/`                      | Localization bundles                                                                                                                                                                         |
 
 > The type-safe RPC transport (tRPC over `postMessage`), the panel facade, and
-> the React hooks are provided by the **`@microsoft/vscode-ext-webview`** package.
-> If you cloned an earlier version of this kit that carried a local
-> `src/webviews/api/` copy, see [migration.md](migration.md) for how to move to
-> the package.
+> the React hooks are provided by version 0.10.0 of the
+> **`@microsoft/vscode-ext-webview`** package. See
+> [migration.md](migration.md) for the current package-based target architecture.
 
 ## Development
 
@@ -264,9 +263,8 @@ This repository is the canonical **all-in** (React + tRPC + webview) reference
 consumer of that package. Teams can adopt the patterns by installing the package
 rather than forking or copying the source.
 
-If you cloned an earlier version of this kit that carried a local
-`src/webviews/api/` copy of the transport, see [migration.md](migration.md) for a
-step-by-step guide to moving onto the package.
+See [migration.md](migration.md) for a focused guide to the current 0.10.0
+package-based architecture and its consumer-owned integration layer.
 
 The adaptive theming system (`DynamicThemeProvider`) is intentionally **not**
 part of the package — theming and other UX policy stay consumer-owned. It

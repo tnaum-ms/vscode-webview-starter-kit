@@ -64,7 +64,7 @@ export const myViewRouter = router({
   // Query with telemetry (preferred for operations that touch external services)
   getData: publicProcedureWithTelemetry.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
     const myCtx = ctx as WithTelemetry<RouterContext>;
-    // myCtx.telemetry is guaranteed present
+    // The consumer telemetry runner contributed myCtx.telemetry for this call.
     // myCtx.signal is the AbortSignal for cancellation
     return { data: 'result' };
   }),
@@ -140,12 +140,19 @@ export type WebviewName = keyof typeof WebviewRegistry;
 
 ## Telemetry: `publicProcedure` vs `publicProcedureWithTelemetry`
 
-| Base                           | When to use                                                                  | `ctx.telemetry`                              |
-| ------------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------- |
-| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | `undefined`                                  |
-| `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Guaranteed via the telemetry middleware body |
+| Base                           | When to use                                                                  | Runner enrichment                         |
+| ------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------- |
+| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | Not added                                 |
+| `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Added by this repository's telemetry runner |
 
-`publicProcedureWithTelemetry` (defined in `_integration/trpc.ts`) wires the package's `telemetryMiddlewareBody` onto a `TelemetryRunner` you supply. The body times each call and records errors, duration, and abort status; the runner establishes the scope and dispatches the telemetry bag (the starter kit logs to the console; swap in `callWithTelemetryAndErrorHandling` for Application Insights).
+`publicProcedureWithTelemetry` (defined in `_integration/trpc.ts`) wires the
+package's curried `telemetryMiddlewareBody` onto a generic
+`TelemetryRunner<TEnrichment>`. The body resolves the event id, merges the
+runner's enrichment into `ctx`, and returns the procedure result unchanged. The
+runner owns timing, cancellation/failure classification, and dispatch. The
+starter kit enriches `ctx` with a plain `telemetry` bag and logs it to the
+console; an Application Insights integration can instead contribute an
+`actionContext` and call `callWithTelemetryAndErrorHandling`.
 
 Access telemetry safely:
 
@@ -209,7 +216,9 @@ const runQuery = async () => {
 };
 ```
 
-When the telemetry middleware body detects an aborted signal, it sets `telemetry.properties.aborted = 'true'` and `result = 'Canceled'` automatically.
+The starter kit's telemetry runner checks the invocation signal after
+`invoke(...)` returns and classifies an aborted call as `Canceled`. The package
+middleware body intentionally does not impose an outcome policy.
 
 ## Subscriptions
 
@@ -263,8 +272,9 @@ export const MyComponent = () => {
 
 ## Common Pitfalls
 
-- **Never use `any`** in procedure context casts — use `WithTelemetry<RouterContext>` or `RouterContext`
+- **Never use `any`** in procedure context casts — use the consumer-owned `WithTelemetry<RouterContext>` alias or `RouterContext`
 - **Always prefer `publicProcedureWithTelemetry`** unless you have a specific reason not to
+- **Do not add runner enrichment to the base context** when plain `publicProcedure` is also used; add it only through `WithTelemetry<T>`
 - **Always check `myCtx.signal?.aborted`** in long-running loops — not checking causes wasted work after client cancels
 - **Do not mutate the shared `context` object** — the framework's dispatcher clones it per-operation already, but router code should treat `ctx` as read-only
 - **Input validation uses `zod`** — always define `.input(z.object({...}))` for type safety
