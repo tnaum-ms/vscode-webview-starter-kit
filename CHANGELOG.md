@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated `@microsoft/vscode-ext-webview` to 0.10.1. This release adds the package migration guide to the published tarball and does not change runtime or type APIs.
+
 ## 2.1.0
 
 ### `@microsoft/vscode-ext-webview` 0.10.0

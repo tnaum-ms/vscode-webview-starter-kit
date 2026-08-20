@@ -49,7 +49,7 @@ Before finishing work on a PR, agents **must** run the following steps in order:
 > React hooks (`useTrpcClient`, `useConfiguration`, `WithWebviewContext`) come
 > from the **`@microsoft/vscode-ext-webview`** package, imported via its `.`,
 > `/host`, `/webview`, and `/react` entry points. The integration targets
-> version 0.10.0; see [migration.md](../migration.md) for the target architecture.
+> version 0.10.1; see [migration.md](../migration.md) for the target architecture.
 
 ## TypeScript Guidelines
 
