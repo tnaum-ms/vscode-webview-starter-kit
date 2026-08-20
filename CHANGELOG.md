@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated `@microsoft/vscode-ext-webview` to 0.10.1. This release adds the package migration guide to the published tarball and does not change runtime or type APIs.
+- Synced adaptive Fluent theme variables with DocumentDB so interaction states, secondary surfaces, separators, disabled controls, and skeletons follow the active VS Code theme.
 
 ## 2.1.0
 

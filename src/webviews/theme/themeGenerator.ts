@@ -53,6 +53,46 @@ export function getBrandTokensFromPalette(keyColor: string, options: Options = {
     }, {}) as BrandVariants;
 }
 
+// Keep these mappings local for now. vscode-documentdb is working to extract
+// the shared theme-related functions into a dedicated package.
+const adaptiveNeutralSurfaces = {
+    colorNeutralBackground1Hover:
+        'var(--vscode-list-hoverBackground, var(--vscode-editorWidget-background, var(--vscode-editor-background)))',
+    colorNeutralBackground1Pressed:
+        'var(--vscode-toolbar-activeBackground, var(--vscode-list-hoverBackground, var(--vscode-editorWidget-background)))',
+    colorNeutralBackground1Selected:
+        'var(--vscode-list-inactiveSelectionBackground, var(--vscode-list-hoverBackground, var(--vscode-editorWidget-background)))',
+    colorNeutralBackgroundDisabled:
+        'var(--vscode-input-background, var(--vscode-editorWidget-background, var(--vscode-editor-background)))',
+    colorNeutralForegroundDisabled:
+        'var(--vscode-disabledForeground, var(--vscode-descriptionForeground, var(--vscode-foreground)))',
+    colorNeutralStrokeDisabled:
+        'var(--vscode-disabledForeground, var(--vscode-widget-border, var(--vscode-panel-border)))',
+    colorSubtleBackgroundHover:
+        'var(--vscode-toolbar-hoverBackground, var(--vscode-list-hoverBackground, var(--vscode-editorWidget-background)))',
+    colorSubtleBackgroundPressed:
+        'var(--vscode-toolbar-activeBackground, var(--vscode-list-activeSelectionBackground, var(--vscode-list-hoverBackground)))',
+    colorNeutralBackground2:
+        'var(--vscode-tree-tableOddRowsBackground, var(--vscode-sideBar-background, var(--vscode-editorWidget-background)))',
+    colorNeutralBackground2Hover:
+        'var(--vscode-list-hoverBackground, var(--vscode-sideBar-background, var(--vscode-editorWidget-background)))',
+    colorNeutralBackground2Pressed:
+        'var(--vscode-toolbar-activeBackground, var(--vscode-list-hoverBackground, var(--vscode-sideBar-background)))',
+    colorNeutralBackground2Selected:
+        'var(--vscode-list-inactiveSelectionBackground, var(--vscode-list-hoverBackground, var(--vscode-sideBar-background)))',
+    colorNeutralStroke2: 'var(--vscode-panel-border, var(--vscode-widget-border, var(--vscode-editorWidget-border)))',
+} satisfies Partial<Theme>;
+
+const lightSkeletonStencils = {
+    colorNeutralStencil1: 'rgba(0, 0, 0, 0.07)',
+    colorNeutralStencil2: 'rgba(0, 0, 0, 0.1)',
+} satisfies Partial<Theme>;
+
+const darkSkeletonStencils = {
+    colorNeutralStencil1: 'rgba(255, 255, 255, 0.07)',
+    colorNeutralStencil2: 'rgba(255, 255, 255, 0.1)',
+} satisfies Partial<Theme>;
+
 // https://react.fluentui.dev/?path=/docs/concepts-developer-theming--page#overriding-existing-tokens
 export const generateAdaptiveLightTheme = (): Theme => {
     const style = getComputedStyle(document.documentElement);
@@ -65,9 +105,15 @@ export const generateAdaptiveLightTheme = (): Theme => {
             colorNeutralForeground1: 'var(--vscode-editor-foreground)',
             colorNeutralForeground1Hover: 'var(--vscode-editor-foreground)',
             colorNeutralForeground1Pressed: 'var(--vscode-editor-foreground)',
-            colorNeutralForeground1Selected: 'var(--vscode-editor-foreground)',
+            colorNeutralForeground1Selected:
+                'var(--vscode-list-inactiveSelectionForeground, var(--vscode-editor-foreground))',
+            colorNeutralForeground2Selected:
+                'var(--vscode-list-inactiveSelectionForeground, var(--vscode-editor-foreground))',
 
             colorNeutralBackground1: 'var(--vscode-editor-background)',
+
+            ...adaptiveNeutralSurfaces,
+            ...lightSkeletonStencils,
         },
     };
 };
@@ -84,13 +130,18 @@ export const generateAdaptiveDarkTheme = (): Theme => {
             colorNeutralForeground1: 'var(--vscode-editor-foreground)',
             colorNeutralForeground1Hover: 'var(--vscode-editor-foreground)',
             colorNeutralForeground1Pressed: 'var(--vscode-editor-foreground)',
-            colorNeutralForeground1Selected: 'var(--vscode-editor-foreground)',
+            colorNeutralForeground1Selected:
+                'var(--vscode-list-inactiveSelectionForeground, var(--vscode-editor-foreground))',
             colorNeutralForeground2: 'var(--vscode-foreground)',
             colorNeutralForeground2Hover: 'var(--vscode-foreground)',
             colorNeutralForeground2Pressed: 'var(--vscode-foreground)',
-            colorNeutralForeground2Selected: 'var(--vscode-foreground)',
+            colorNeutralForeground2Selected:
+                'var(--vscode-list-inactiveSelectionForeground, var(--vscode-editor-foreground))',
 
             colorNeutralBackground1: 'var(--vscode-editor-background)',
+
+            ...adaptiveNeutralSurfaces,
+            ...darkSkeletonStencils,
         },
     };
 };
