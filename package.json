@@ -103,9 +103,10 @@
     "webpack-dev-server": "~5.2.2"
   },
   "dependencies": {
-    "@fluentui/react-components": "~9.72.3",
+    "@fluentui/react-components": "~9.74.4",
     "@fluentui/react-icons": "~2.0.313",
     "@microsoft/vscode-ext-webview": "~0.10.1",
+    "@microsoft/vscode-ext-webview-fluentui": "~0.1.0-preview",
     "@monaco-editor/react": "~4.7.0",
     "@trpc/client": "~11.10.0",
     "@trpc/server": "~11.10.0",
