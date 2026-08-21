@@ -3,7 +3,12 @@
 ## Unreleased
 
 - Updated `@microsoft/vscode-ext-webview` to 0.10.1. This release adds the package migration guide to the published tarball and does not change runtime or type APIs.
-- Synced adaptive Fluent theme variables with DocumentDB so interaction states, secondary surfaces, separators, disabled controls, and skeletons follow the active VS Code theme.
+- **Adopted the [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui) package** — the adaptive theming that previously lived in a local `src/webviews/theme/` copy is now consumed from the published npm package. `DynamicThemeProvider` becomes `VSCodeFluentProvider`, and the `useAdaptive` flag is gone: its `false` branch returned Fluent's canned Teams themes, which is the absence of the package rather than a feature of it.
+- **The adaptive variable sync now comes from the package** — the interaction states, secondary surfaces, separators and disabled controls previously synced by hand ship in the package verbatim. Skeleton stencils differ deliberately: the package makes them opaque rather than alpha overlays, because an alpha stencil adds to Fluent's resting fill and leaves a visible edge sweeping across an `opaque` skeleton. Pass `appearance="translucent"`.
+- **Fluent overrides now ship with the theming** — the package injects a stylesheet of component-scoped escapes for cases a Fluent recipe cannot be reached through tokens. Every rule is `:where()`-wrapped, so your own selectors still win.
+- **Monaco theming stays in the extension**, at `src/webviews/components/monaco/` — Monaco is not Fluent, and the package declines a ~5 MB `monaco-editor` peer. `MonacoEditor` derives its theme from `useActiveVSCodeThemeKind()`, cached on the theme kind.
+- **Removed** the local `src/webviews/theme/` folder (~1,260 lines: the provider, theme context, generators and LCH/LAB palette math).
+- **Requires `@fluentui/react-components` `~9.74`** — the package pins a narrow range because its overrides key off `fui-*` class names.
 
 ## 2.1.0
 
