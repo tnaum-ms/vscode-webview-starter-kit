@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { VSCodeFluentProvider } from '@microsoft/vscode-ext-webview-fluentui';
 import { type WebviewState, WithWebviewContext } from '@microsoft/vscode-ext-webview/react';
 import * as l10n from '@vscode/l10n';
 import { type l10nJsonFormat } from '@vscode/l10n';
@@ -11,7 +12,6 @@ import * as React from 'react';
 import { createRoot } from 'react-dom/client';
 import { type WebviewApi } from 'vscode-webview';
 import { type WebviewName, WebviewRegistry } from './_integration/WebviewRegistry';
-import { DynamicThemeProvider } from './theme/DynamicThemeProvider';
 
 export type ViewKey = WebviewName;
 
@@ -29,10 +29,10 @@ export function render<V extends ViewKey>(key: V, vscodeApi: WebviewApi<WebviewS
     const root = createRoot(container);
 
     root.render(
-        <DynamicThemeProvider useAdaptive={true}>
+        <VSCodeFluentProvider>
             <WithWebviewContext vscodeApi={vscodeApi}>
                 <Component />
             </WithWebviewContext>
-        </DynamicThemeProvider>,
+        </VSCodeFluentProvider>,
     );
 }
