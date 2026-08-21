@@ -630,8 +630,8 @@ The webview rendering pipeline starts in `index.tsx`:
 
 ```tsx
 import { WithWebviewContext } from '@microsoft/vscode-ext-webview/react';
+import { VSCodeFluentProvider } from '@microsoft/vscode-ext-webview-fluentui';
 import { WebviewRegistry } from './_integration/WebviewRegistry';
-import { DynamicThemeProvider } from './theme/DynamicThemeProvider';
 
 export function render<V extends ViewKey>(key: V, vscodeApi: WebviewApi<WebviewState>, rootId = 'root'): void {
   l10n.config({ contents: (globalThis.l10n_bundle as l10nJsonFormat) ?? {} });
@@ -640,18 +640,18 @@ export function render<V extends ViewKey>(key: V, vscodeApi: WebviewApi<WebviewS
   const root = createRoot(container);
 
   root.render(
-    <DynamicThemeProvider useAdaptive={true}>
+    <VSCodeFluentProvider>
       <WithWebviewContext vscodeApi={vscodeApi}>
         <Component />
       </WithWebviewContext>
-    </DynamicThemeProvider>,
+    </VSCodeFluentProvider>,
   );
 }
 ```
 
 **Key architecture layers:**
 
-- **`DynamicThemeProvider`**: Adapts Fluent UI theming to VS Code's current color theme
+- **`VSCodeFluentProvider`**: Adapts Fluent UI theming to VS Code's current color theme
 - **`WithWebviewContext`**: Provides `vscodeApi` (for postMessage) via React Context
 - **`WebviewRegistry`**: Maps webview names to React components
 - **`l10n` config**: Loads localization bundle injected by the extension host
@@ -685,7 +685,7 @@ For accessibility, use the `Announcer` component from `src/webviews/components/A
 
 ## Fluent UI Integration
 
-The webviews use `@fluentui/react-components` (Fluent UI v9) as the primary component library, themed to match VS Code via `DynamicThemeProvider`.
+The webviews use `@fluentui/react-components` (Fluent UI v9) as the primary component library, themed to match VS Code via `VSCodeFluentProvider`.
 
 ### Common Components
 
@@ -847,7 +847,7 @@ For tRPC-related hooks (`useTrpcClient`) and patterns, see the **webview-trpc-me
 - Use `es-toolkit` for utilities like `debounce`
 - Handle errors gracefully with user-friendly messages
 - Use Monaco's manual layout for performance
-- Use Fluent UI components themed via `DynamicThemeProvider`
+- Use Fluent UI components themed via `VSCodeFluentProvider`
 
 ### ❌ Don'ts
 

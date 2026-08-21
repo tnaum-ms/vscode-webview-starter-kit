@@ -19,7 +19,7 @@
  *
  *   3. **Theme & Fluent UI** — Showcases Fluent UI v9 components that adapt
  *      automatically when the user switches VS Code themes. The theming is
- *      powered by `DynamicThemeProvider`, which observes VS Code's
+ *      powered by `VSCodeFluentProvider`, which observes VS Code's
  *      `data-vscode-theme-kind` attribute and regenerates a Fluent `Theme`
  *      from the active CSS custom properties.
  *

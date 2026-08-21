@@ -39,8 +39,7 @@ Before finishing work on a PR, agents **must** run the following steps in order:
 | `src/`                       | Main extension source code                                                                                                                              |
 | `src/webviews/`              | React webview components                                                                                                                                |
 | `src/webviews/_integration/` | Consumer-owned glue over `@microsoft/vscode-ext-webview`: `appRouter`, `trpc` (telemetry adapter), `openAppWebview`, `useTrpcClient`, `WebviewRegistry` |
-| `src/webviews/components/`   | Shared components (`MonacoEditor`, `Announcer`)                                                                                                         |
-| `src/webviews/theme/`        | Adaptive theming (`DynamicThemeProvider`)                                                                                                               |
+| `src/webviews/components/`   | Shared components (`MonacoEditor`, `Announcer`) and the Monaco theme derivation                                                                         |
 | `src/commands/`              | Command handlers                                                                                                                                        |
 | `src/utils/`                 | Shared utility functions                                                                                                                                |
 | `l10n/`                      | Localization files                                                                                                                                      |
@@ -50,6 +49,8 @@ Before finishing work on a PR, agents **must** run the following steps in order:
 > from the **`@microsoft/vscode-ext-webview`** package, imported via its `.`,
 > `/host`, `/webview`, and `/react` entry points. The integration targets
 > version 0.10.1; see [migration.md](../migration.md) for the target architecture.
+> Adaptive Fluent UI theming (`VSCodeFluentProvider`) comes from its sibling
+> **`@microsoft/vscode-ext-webview-fluentui`**.
 
 ## TypeScript Guidelines
 

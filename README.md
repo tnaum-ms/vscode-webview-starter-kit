@@ -28,7 +28,7 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 
 - **Type-safe RPC** - End-to-end typed communication between extension host and webview via `postMessage` (powered by [tRPC](https://trpc.io/))
 - **React + Fluent UI** - Modern UI components with VS Code theme integration
-- **Adaptive theming** - Automatic theme adaptation using `DynamicThemeProvider`
+- **Adaptive theming** - Automatic theme adaptation using `VSCodeFluentProvider`
 - **Monaco Editor** - Embedded code editor component
 - **Subscriptions & Abort** - Real-time data streaming and cancellable long-running operations
 - **Localization** - Full `@vscode/l10n` integration
@@ -67,14 +67,15 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 | `src/`                       | Extension host source code                                                                                                                                                                   |
 | `src/webviews/`              | React webview components                                                                                                                                                                     |
 | `src/webviews/_integration/` | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
-| `src/webviews/theme/`        | Adaptive theming system                                                                                                                                                                      |
+| `src/webviews/components/`   | Shared components (`MonacoEditor`, `Announcer`) and the Monaco theme derivation                                                                                                              |
 | `src/webviews/demo/`         | Demo webview views                                                                                                                                                                           |
 | `src/commands/`              | Command handlers                                                                                                                                                                             |
 | `l10n/`                      | Localization bundles                                                                                                                                                                         |
 
 > The type-safe RPC transport (tRPC over `postMessage`), the panel facade, and
 > the React hooks are provided by version 0.10.0 of the
-> **`@microsoft/vscode-ext-webview`** package. See
+> **`@microsoft/vscode-ext-webview`** package, and the adaptive Fluent UI theming
+> by its sibling **`@microsoft/vscode-ext-webview-fluentui`**. See
 > [migration.md](migration.md) for the current package-based target architecture.
 
 ## Development
@@ -131,7 +132,7 @@ Extension Host (Node.js)           Webview (Browser)
 ┌──────────────────────┐           ┌───────────────────────┐
 │  WebviewController   │◄─────────►│  React + Fluent UI    │
 │  tRPC Router         │  postMsg  │  tRPC Client          │
-│  Procedures          │           │  DynamicThemeProvider │
+│  Procedures          │           │  VSCodeFluentProvider │
 └──────────────────────┘           └───────────────────────┘
 ```
 
@@ -154,7 +155,7 @@ VS Code webviews communicate with the extension host through `window.postMessage
 
 ### Adaptive Theming
 
-`DynamicThemeProvider` reads VS Code's CSS custom properties (e.g., `--vscode-editor-background`) at runtime and generates a matching Fluent UI theme. When the user switches VS Code themes, the webview updates automatically without a reload.
+`VSCodeFluentProvider`, from [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui), reads VS Code's CSS custom properties (e.g., `--vscode-editor-background`) at runtime and generates a matching Fluent UI theme. When the user switches VS Code themes, the webview updates automatically without a reload.
 
 <p align="center"><img src="./resources/vscode-webview-themes-support.gif" alt="Adaptive theming in action — the webview automatically adapts as VS Code themes change" width="600" style="max-width:100%;height:auto;"></p>
 
@@ -233,7 +234,7 @@ Raw `postMessage` requires you to define message types manually, match request/r
 
 ### Can I use a different UI framework instead of Fluent UI?
 
-Yes. The tRPC messaging layer and the webview controller infrastructure are independent of the UI library. You can replace Fluent UI with any React component library. The `DynamicThemeProvider` is Fluent UI-specific, so you would need to adapt the theming approach for your chosen framework.
+Yes. The tRPC messaging layer and the webview controller infrastructure are independent of the UI library. You can replace Fluent UI with any React component library. `VSCodeFluentProvider` is Fluent UI-specific, so you would need to adapt the theming approach for your chosen framework.
 
 ### How do I persist state when the webview is hidden?
 
@@ -253,7 +254,7 @@ Install the package normally with `npm install`. If the package is used only in 
 - **Webview debugging requires DevTools.** VS Code breakpoints do not work inside webview code. Use the browser Developer Tools (`Ctrl+Shift+I` in the Extension Host window) to inspect and debug.
 - **Extension host changes need a restart.** Hot reloading applies only to webview code. Changes to extension host files (routers, controllers, commands) require restarting the Extension Development Host (`Ctrl+Shift+F5`).
 
-## Published npm Package
+## Published npm Packages
 
 This starter kit's core webview infrastructure — the tRPC messaging layer, the
 webview controller / panel facade, and the React hooks — now ships as a
@@ -266,9 +267,13 @@ rather than forking or copying the source.
 See [migration.md](migration.md) for a focused guide to the current 0.10.0
 package-based architecture and its consumer-owned integration layer.
 
-The adaptive theming system (`DynamicThemeProvider`) is intentionally **not**
-part of the package — theming and other UX policy stay consumer-owned. It
-remains in this repository under `src/webviews/theme/`.
+The adaptive theming system likewise ships separately, as
+[`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui).
+Neither package depends on the other: theming reads the active theme off the DOM
+and needs no transport, so each is adoptable on its own. What stays in this
+repository is the Monaco theme derivation, under
+`src/webviews/components/monaco/` — Monaco is not Fluent, and a ~5 MB peer has no
+place in a theming package.
 
 ## Contributors
 

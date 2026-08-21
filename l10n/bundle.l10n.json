@@ -112,7 +112,7 @@
   "Theme & Fluent UI": "Theme & Fluent UI",
   "Theme Showcase": "Theme Showcase",
   "Theming": "Theming",
-  "These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The DynamicThemeProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.": "These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The DynamicThemeProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.",
+  "These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The VSCodeFluentProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.": "These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The VSCodeFluentProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.",
   "This is a deliberate error thrown by the extension host to demonstrate error handling.": "This is a deliberate error thrown by the extension host to demonstrate error handling.",
   "This is an informational message.": "This is an informational message.",
   "Toggle switch": "Toggle switch",

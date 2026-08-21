@@ -58,7 +58,7 @@ export const ThemeTab: React.FC = () => {
                 </div>
                 <Body1>
                     {l10n.t(
-                        'These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The DynamicThemeProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.',
+                        'These Fluent UI components automatically adapt when you switch VS Code themes (Ctrl+K Ctrl+T). The VSCodeFluentProvider observes theme changes and regenerates Fluent tokens from VS Code CSS variables.',
                     )}
                 </Body1>
 
