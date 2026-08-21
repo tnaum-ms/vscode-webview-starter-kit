@@ -5,8 +5,10 @@
 
 import { teamsDarkTheme, teamsHighContrastTheme, teamsLightTheme } from '@fluentui/react-components';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { generateAdaptiveDarkTheme, generateAdaptiveLightTheme, generateMonacoTheme } from '../themeGenerator';
-import { defaultState, type MonacoBuiltinTheme, type MonacoTheme, type ThemeState } from './ThemeState';
+// eslint-disable-next-line import/no-internal-modules
+import { generateMonacoTheme, type MonacoBuiltinTheme, type MonacoTheme } from '../../components/monaco/monacoTheme';
+import { generateAdaptiveDarkTheme, generateAdaptiveLightTheme } from '../themeGenerator';
+import { defaultState, type ThemeState } from './ThemeState';
 
 export const ThemeContext = createContext<ThemeState>(defaultState);
 

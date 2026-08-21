@@ -4,9 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { type BrandVariants, createDarkTheme, createLightTheme, type Theme } from '@fluentui/react-components';
-import { type MonacoBuiltinTheme, type MonacoColors, type MonacoThemeData } from './state/ThemeState';
 import { hex_to_LCH, hexColorsFromPalette, type Palette, RGBAToHexA } from './utils';
-import { vscodeThemeTokens, vscodeThemeTokenToCSSVar } from './vscodeThemeTokens';
 
 type Options = {
     darkCp?: number;
@@ -143,27 +141,5 @@ export const generateAdaptiveDarkTheme = (): Theme => {
             ...adaptiveNeutralSurfaces,
             ...darkSkeletonStencils,
         },
-    };
-};
-
-export const generateMonacoTheme = (baseTheme: MonacoBuiltinTheme): MonacoThemeData => {
-    const style = getComputedStyle(document.documentElement);
-    const colors = vscodeThemeTokens
-        .map((token) => {
-            let color = style.getPropertyValue(vscodeThemeTokenToCSSVar(token));
-            if (!color.startsWith('#')) {
-                if (color.startsWith('rgb')) {
-                    color = RGBAToHexA(color);
-                }
-            }
-            return [token, color];
-        })
-        .filter(([_, color]) => color !== '');
-
-    return {
-        base: baseTheme,
-        inherit: true,
-        rules: [],
-        colors: Object.fromEntries(colors) as MonacoColors,
     };
 };

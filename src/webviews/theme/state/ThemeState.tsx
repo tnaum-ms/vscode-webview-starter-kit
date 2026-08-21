@@ -5,15 +5,7 @@
 
 import { teamsLightTheme, type Theme } from '@fluentui/react-components';
 // eslint-disable-next-line import/no-internal-modules
-import type * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
-
-export type MonacoBuiltinTheme = monacoEditor.editor.BuiltinTheme;
-export type MonacoThemeData = monacoEditor.editor.IStandaloneThemeData;
-export type MonacoColors = monacoEditor.editor.IColors;
-export type MonacoTheme = {
-    theme?: MonacoThemeData;
-    themeName: string;
-};
+import { type MonacoTheme } from '../../components/monaco/monacoTheme';
 
 export type ThemeState = {
     themeKind: string;
