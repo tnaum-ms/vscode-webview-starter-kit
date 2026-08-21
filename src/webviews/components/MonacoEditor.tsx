@@ -8,10 +8,12 @@ import Editor, { loader, useMonaco, type EditorProps, type OnMount } from '@mona
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { useUncontrolledFocus } from '@fluentui/react-components';
+import { useActiveVSCodeThemeKind } from '@microsoft/vscode-ext-webview-fluentui';
 import * as l10n from '@vscode/l10n';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useThemeState } from '../theme/state/ThemeContext';
 import { Announcer } from './Announcer';
+// eslint-disable-next-line import/no-internal-modules
+import { getMonacoTheme } from './monaco/monacoTheme';
 
 loader.config({ monaco: monacoEditor });
 
@@ -44,7 +46,7 @@ export interface MonacoEditorProps extends EditorProps {
  */
 export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditorProps) => {
     const monaco = useMonaco();
-    const themeState = useThemeState();
+    const themeKind = useActiveVSCodeThemeKind();
     const uncontrolledFocus = useUncontrolledFocus();
 
     // Track whether we should announce the escape hint (once per focus session)
@@ -63,11 +65,16 @@ export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditor
     }, []);
 
     useEffect(() => {
-        if (monaco && themeState.monaco.theme) {
-            monaco.editor.defineTheme(themeState.monaco.themeName, themeState.monaco.theme);
-            monaco.editor.setTheme(themeState.monaco.themeName);
+        if (!monaco) {
+            return;
         }
-    }, [monaco, themeState]);
+
+        const { themeName, theme } = getMonacoTheme(themeKind);
+        if (theme) {
+            monaco.editor.defineTheme(themeName, theme);
+        }
+        monaco.editor.setTheme(themeName);
+    }, [monaco, themeKind]);
 
     const handleMount: OnMount = useCallback(
         (editor, monacoInstance) => {
@@ -130,7 +137,7 @@ export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditor
                 {...props}
                 data-is-focus-trap-zone-bumper={'true'}
                 onMount={handleMount}
-                theme={themeState.monaco.themeName}
+                theme={getMonacoTheme(themeKind).themeName}
             />
         </section>
     );
