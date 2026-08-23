@@ -6,6 +6,12 @@ Build rich, interactive VS Code webviews, fast. This starter kit gives you **typ
 
 This project was extracted from the webview infrastructure powering [DocumentDB for VS Code](https://github.com/microsoft/vscode-documentdb/) Extension and [Azure Cosmos DB](https://github.com/microsoft/vscode-cosmosdb/) Extension. It provides a production-tested foundation for building VS Code webviews with React.
 
+> **New here, or evaluating this for your team?** Start with
+> [docs/webview-packages-overview.md](docs/webview-packages-overview.md), a short brief on the two
+> npm packages (`@microsoft/vscode-ext-webview` and `@microsoft/vscode-ext-webview-fluentui`), what each
+> one is for, why the tRPC approach makes webview code easier to read, and how two shipping extensions
+> consume them with completely different build stacks.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -274,6 +280,10 @@ and needs no transport, so each is adoptable on its own. What stays in this
 repository is the Monaco theme derivation, under
 `src/webviews/components/monaco/` — Monaco is not Fluent, and a ~5 MB peer has no
 place in a theming package.
+
+For a high-level overview of both packages, how they divide responsibilities, and
+how the DocumentDB and Azure Cosmos DB extensions consume them, see
+[docs/webview-packages-overview.md](docs/webview-packages-overview.md).
 
 ## Contributors
 
