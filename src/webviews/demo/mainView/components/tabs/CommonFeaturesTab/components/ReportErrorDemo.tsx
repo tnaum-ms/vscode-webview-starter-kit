@@ -75,7 +75,7 @@ export const ReportErrorDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Report Error')}</Subtitle1>
-                <Badge appearance="tint" color="danger">
+                <Badge appearance="tint" color="danger" shape="rounded">
                     {l10n.t('Telemetry')}
                 </Badge>
             </div>
@@ -99,7 +99,7 @@ export const ReportErrorDemo: React.FC = () => {
                         {l10n.t('Report Error')}
                     </Button>
                     {sent && (
-                        <Badge appearance="filled" color="success">
+                        <Badge appearance="filled" color="success" shape="rounded">
                             {l10n.t('Sent')}
                         </Badge>
                     )}

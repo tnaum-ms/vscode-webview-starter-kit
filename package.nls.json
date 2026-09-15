@@ -1,3 +1,5 @@
 {
-  "webviewStarter.openMainView.title": "Open Main View"
+  "webviewStarter.openMainView.title": "Open Main View",
+  "webviewStarter.openComponentShowcase.title": "Open Component Showcase",
+  "webviewStarter.openShowcaseWizard.title": "Open wizard demo"
 }

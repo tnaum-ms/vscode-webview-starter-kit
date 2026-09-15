@@ -3,17 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import Editor, { loader, useMonaco, type EditorProps, type OnMount } from '@monaco-editor/react';
+import Editor, { loader, useMonaco, type BeforeMount, type EditorProps, type OnMount } from '@monaco-editor/react';
 // eslint-disable-next-line import/no-internal-modules
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { useUncontrolledFocus } from '@fluentui/react-components';
-import { useActiveVSCodeThemeKind } from '@microsoft/vscode-ext-webview-fluentui';
-import * as l10n from '@vscode/l10n';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Announcer } from './Announcer';
 // eslint-disable-next-line import/no-internal-modules
-import { getMonacoTheme } from './monaco/monacoTheme';
+import { useVSCodeMonacoTheme } from '@microsoft/vscode-ext-webview-fluentui/monaco';
+import * as l10n from '@vscode/l10n';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type JSX } from 'react';
+import { Announcer } from './Announcer';
 
 loader.config({ monaco: monacoEditor });
 
@@ -44,9 +43,10 @@ export interface MonacoEditorProps extends EditorProps {
  * 3. **Screen Reader Announcement**: Announces "Press Escape to exit editor"
  *    once when the editor receives focus (only announced once per focus session).
  */
-export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditorProps) => {
+export const MonacoEditor = ({ onEscapeEditor, beforeMount, onMount, ...props }: MonacoEditorProps): JSX.Element => {
     const monaco = useMonaco();
-    const themeKind = useActiveVSCodeThemeKind();
+    const monacoTheme = useVSCodeMonacoTheme({ themeName: 'adaptive' });
+    const beforeMountRef = useRef({ monacoTheme, beforeMount });
     const uncontrolledFocus = useUncontrolledFocus();
 
     // Track whether we should announce the escape hint (once per focus session)
@@ -64,17 +64,23 @@ export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditor
         };
     }, []);
 
-    useEffect(() => {
+    // The package snapshot changes for color edits and same-kind theme switches, not just light/dark changes.
+    useLayoutEffect(() => {
+        beforeMountRef.current = { monacoTheme, beforeMount };
         if (!monaco) {
             return;
         }
 
-        const { themeName, theme } = getMonacoTheme(themeKind);
-        if (theme) {
-            monaco.editor.defineTheme(themeName, theme);
-        }
-        monaco.editor.setTheme(themeName);
-    }, [monaco, themeKind]);
+        monaco.editor.defineTheme(monacoTheme.themeName, monacoTheme.data);
+        monaco.editor.setTheme(monacoTheme.themeName);
+    }, [monaco, monacoTheme, beforeMount]);
+
+    // Register before editor creation for first paint; the ref stays current while Monaco loads asynchronously.
+    const handleBeforeMount: BeforeMount = useCallback((monacoInstance) => {
+        const current = beforeMountRef.current;
+        monacoInstance.editor.defineTheme(current.monacoTheme.themeName, current.monacoTheme.data);
+        current.beforeMount?.(monacoInstance);
+    }, []);
 
     const handleMount: OnMount = useCallback(
         (editor, monacoInstance) => {
@@ -136,8 +142,9 @@ export const MonacoEditor = ({ onEscapeEditor, onMount, ...props }: MonacoEditor
             <Editor
                 {...props}
                 data-is-focus-trap-zone-bumper={'true'}
+                beforeMount={handleBeforeMount}
                 onMount={handleMount}
-                theme={getMonacoTheme(themeKind).themeName}
+                theme={monacoTheme.themeName}
             />
         </section>
     );

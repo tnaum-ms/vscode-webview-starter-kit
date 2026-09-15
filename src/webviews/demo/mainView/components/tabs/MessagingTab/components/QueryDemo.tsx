@@ -54,7 +54,7 @@ export const QueryDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Basic Query')}</Subtitle1>
-                <Badge appearance="tint" color="brand">
+                <Badge appearance="tint" color="brand" shape="rounded">
                     {l10n.t('Query')}
                 </Badge>
             </div>

@@ -35,6 +35,15 @@ export const mainViewRouter = router({
         await vscode.commands.executeCommand('webviewStarter.openBasicView');
     }),
 
+    // Panel creation stays on the host; webviews request it through typed procedures.
+    openComponentShowcase: publicProcedureWithTelemetry.mutation(async () => {
+        await vscode.commands.executeCommand('webviewStarter.openComponentShowcase');
+    }),
+
+    openShowcaseWizard: publicProcedureWithTelemetry.mutation(async () => {
+        await vscode.commands.executeCommand('webviewStarter.openShowcaseWizard');
+    }),
+
     /**
      * Simple query — returns a greeting from the extension host.
      * Demonstrates the most basic tRPC query pattern.

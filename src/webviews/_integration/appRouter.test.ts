@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as vscode from 'vscode';
 import { openUrl } from '../../utils/openUrl';
 import { appRouter } from './appRouter';
 import { createCallerFactory } from './trpc';
@@ -30,6 +31,19 @@ describe('appRouter', () => {
     const createCaller = createCallerFactory(appRouter);
     const caller = createCaller({});
 
+    it.each([
+        ['openComponentShowcase', 'webviewStarter.openComponentShowcase'],
+        ['openShowcaseWizard', 'webviewStarter.openShowcaseWizard'],
+    ] as const)('demo.mainView.%s opens its dedicated panel', async (procedure, command) => {
+        const executeCommand = jest.spyOn(vscode.commands, 'executeCommand').mockResolvedValue(undefined);
+        try {
+            await caller.demo.mainView[procedure]();
+            expect(executeCommand).toHaveBeenCalledWith(command);
+        } finally {
+            executeCommand.mockRestore();
+        }
+    });
+
     it('demo.basicView.hello returns a greeting from the extension host', async () => {
         const result = await caller.demo.basicView.hello();
         expect(result.message).toContain('Hello');
@@ -55,5 +69,23 @@ describe('appRouter', () => {
         await caller.common.openUrl({ url: 'https://example.com' });
 
         expect(openUrlMock).toHaveBeenCalledWith('https://example.com');
+    });
+
+    it('common.displayInformationMessage opens a modal information dialog', async () => {
+        const showInformationMessage = jest.spyOn(vscode.window, 'showInformationMessage').mockResolvedValue(undefined);
+        try {
+            await caller.common.displayInformationMessage({
+                message: 'About this demo',
+                modal: true,
+                detail: 'No resources are created.',
+            });
+
+            expect(showInformationMessage).toHaveBeenCalledWith('About this demo', {
+                modal: true,
+                detail: 'No resources are created.',
+            });
+        } finally {
+            showInformationMessage.mockRestore();
+        }
     });
 });

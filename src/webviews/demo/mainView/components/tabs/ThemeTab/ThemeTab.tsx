@@ -52,7 +52,7 @@ export const ThemeTab: React.FC = () => {
             <div className="mainView__card">
                 <div className="mainView__card-header">
                     <Subtitle1>{l10n.t('Theme Showcase')}</Subtitle1>
-                    <Badge appearance="tint" color="informative">
+                    <Badge appearance="tint" color="informative" shape="rounded">
                         {l10n.t('Theming')}
                     </Badge>
                 </div>
@@ -143,28 +143,28 @@ export const ThemeTab: React.FC = () => {
                             </MessageBar>
                             <ProgressBar value={0.65} max={1} />
                             <div className="mainView__button-row">
-                                <Badge appearance="filled" color="brand">
+                                <Badge appearance="filled" color="brand" shape="rounded">
                                     {l10n.t('Brand')}
                                 </Badge>
-                                <Badge appearance="filled" color="danger">
+                                <Badge appearance="filled" color="danger" shape="rounded">
                                     {l10n.t('Danger')}
                                 </Badge>
-                                <Badge appearance="filled" color="important">
+                                <Badge appearance="filled" color="important" shape="rounded">
                                     {l10n.t('Important')}
                                 </Badge>
-                                <Badge appearance="filled" color="informative">
+                                <Badge appearance="filled" color="informative" shape="rounded">
                                     {l10n.t('Informative')}
                                 </Badge>
-                                <Badge appearance="filled" color="severe">
+                                <Badge appearance="filled" color="severe" shape="rounded">
                                     {l10n.t('Severe')}
                                 </Badge>
-                                <Badge appearance="filled" color="subtle">
+                                <Badge appearance="filled" color="subtle" shape="rounded">
                                     {l10n.t('Subtle')}
                                 </Badge>
-                                <Badge appearance="filled" color="success">
+                                <Badge appearance="filled" color="success" shape="rounded">
                                     {l10n.t('Success')}
                                 </Badge>
-                                <Badge appearance="filled" color="warning">
+                                <Badge appearance="filled" color="warning" shape="rounded">
                                     {l10n.t('Warning')}
                                 </Badge>
                             </div>

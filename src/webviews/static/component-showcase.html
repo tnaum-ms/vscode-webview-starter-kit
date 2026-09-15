@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Component Showcase</title>
+        <style>
+            /* A browser has no VS Code host to supply these tokens. Real panels use the active editor theme. */
+            body {
+                margin: 0;
+                --vscode-font-family: 'Segoe UI', sans-serif;
+                --vscode-font-size: 13px;
+                --vscode-editor-background: #ffffff;
+                --vscode-editor-foreground: #333333;
+                --vscode-foreground: #333333;
+                --vscode-descriptionForeground: #616161;
+                --vscode-focusBorder: #005fb8;
+                --vscode-button-background: #005fb8;
+                --vscode-button-foreground: #ffffff;
+                --vscode-button-hoverBackground: #0258a8;
+                --vscode-input-background: #ffffff;
+                --vscode-input-foreground: #333333;
+                --vscode-input-border: #cecece;
+                --vscode-checkbox-background: #ffffff;
+                --vscode-checkbox-border: #616161;
+                --vscode-textLink-foreground: #005fb8;
+                --vscode-errorForeground: #a1260d;
+            }
+        </style>
+    </head>
+    <body class="vscode-light" data-vscode-theme-kind="vscode-light" data-vscode-theme-id="Browser preview">
+        <div id="root"></div>
+        <script type="module">
+            import { render } from '../views.js';
+
+            // Browser-only launch mock. Real panels use the extension host, never this adapter.
+            globalThis.l10n_bundle = {};
+            window.config = { __initialData: encodeURIComponent(JSON.stringify({})) };
+            const requestedView = new URL(location.href).searchParams.get('view');
+            const view = ['mainView', 'showcaseWizard'].includes(requestedView) ? requestedView : 'componentShowcase';
+            const launchTargets = new Map([
+                ['demo.mainView.openComponentShowcase', 'componentShowcase'],
+                ['demo.mainView.openShowcaseWizard', 'showcaseWizard'],
+            ]);
+            let state;
+            const vscodeApi = {
+                postMessage(message) {
+                    if (message.op?.path === 'common.displayInformationMessage' && message.op.type === 'mutation') {
+                        const { detail, message: title } = message.op.input;
+                        window.alert(detail ? `${title}\n\n${detail}` : title);
+                        queueMicrotask(() => {
+                            window.dispatchEvent(
+                                new MessageEvent('message', { data: { id: message.id, result: null } }),
+                            );
+                        });
+                        return;
+                    }
+                    const target = launchTargets.get(message.op?.path);
+                    if (!target || message.op.type !== 'mutation') {
+                        throw new Error(
+                            'This browser preview supports only showcase launches and information dialogs.',
+                        );
+                    }
+                    const url = new URL(location.href);
+                    url.searchParams.set('view', target);
+                    window.open(url, '_blank', 'noopener');
+                    queueMicrotask(() => {
+                        window.dispatchEvent(new MessageEvent('message', { data: { id: message.id, result: null } }));
+                    });
+                },
+                getState() {
+                    return state;
+                },
+                setState(next) {
+                    state = next;
+                    return next;
+                },
+            };
+            document.title = view === 'showcaseWizard' ? 'Wizard demo' : 'Component Showcase';
+            render(view, vscodeApi);
+        </script>
+    </body>
+</html>

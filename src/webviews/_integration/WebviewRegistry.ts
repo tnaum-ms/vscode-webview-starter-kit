@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BasicView } from '../demo/basicView/BasicView';
+import { ComponentShowcase } from '../demo/componentShowcase/ComponentShowcase';
+import { ShowcaseWizard } from '../demo/componentShowcase/ShowcaseWizard';
 import { MainView } from '../demo/mainView/MainView';
 
 /**
@@ -22,6 +24,8 @@ import { MainView } from '../demo/mainView/MainView';
  */
 export const WebviewRegistry = {
     basicView: BasicView,
+    componentShowcase: ComponentShowcase,
+    showcaseWizard: ShowcaseWizard,
     mainView: MainView,
 } as const;
 

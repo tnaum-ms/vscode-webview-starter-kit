@@ -27,7 +27,7 @@ export const DisplayErrorMessageDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Display Error Message')}</Subtitle1>
-                <Badge appearance="tint" color="warning">
+                <Badge appearance="tint" color="warning" shape="rounded">
                     {l10n.t('UI')}
                 </Badge>
             </div>

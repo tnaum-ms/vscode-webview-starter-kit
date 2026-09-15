@@ -10,12 +10,13 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 > [docs/webview-packages-overview.md](docs/webview-packages-overview.md), a short brief on the two
 > npm packages (`@microsoft/vscode-ext-webview` and `@microsoft/vscode-ext-webview-fluentui`), what each
 > one is for, why the tRPC approach makes webview code easier to read, and how two shipping extensions
-> consume them with completely different build stacks.
+> consume the core package with completely different build stacks.
 
 ## Table of Contents
 
 - [Features](#features)
 - [Try the Demo](#try-the-demo)
+- [Component Showcase](docs/component-showcase.md)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Development](#development)
@@ -27,7 +28,6 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 - [Advanced](#advanced)
 - [FAQ](#faq)
 - [Limitations](#limitations)
-- [Future Work](#future-work)
 - [License](#license)
 
 ## Features
@@ -35,7 +35,8 @@ This project was extracted from the webview infrastructure powering [DocumentDB 
 - **Type-safe RPC** - End-to-end typed communication between extension host and webview via `postMessage` (powered by [tRPC](https://trpc.io/))
 - **React + Fluent UI** - Modern UI components with VS Code theme integration
 - **Adaptive theming** - Automatic theme adaptation using `VSCodeFluentProvider`
-- **Monaco Editor** - Embedded code editor component
+- **Component Showcase** - [Six package component families, 16 exports](docs/component-showcase.md), with interactive layout, wizard, status, metrics, and keyboard-accessible badge examples
+- **Monaco Editor** - Embedded editor with shared VS Code theme mapping from the package's `/monaco` entry
 - **Subscriptions & Abort** - Real-time data streaming and cancellable long-running operations
 - **Localization** - Full `@vscode/l10n` integration
 
@@ -53,6 +54,38 @@ A pre-built `.vsix` package is available so you can try the extension without cl
 
 To uninstall later, find the extension in the Extensions sidebar and click **Uninstall**.
 
+### Try the Component Showcase
+
+The **v2.0.0 VSIX does not include the new showcase**. Use the current source and a new build:
+follow [Getting Started](#getting-started) and press **F5**. For the easiest discovery,
+select the **Component Showcase** tab in the Main View: its explanatory text introduces
+the samples, and **Open Component Showcase** opens them in a separate panel.
+In **Layout & navigation**, choose **Open wizard demo** to launch the full-viewport
+**Wizard demo** webview (`showcaseWizard`), independently of the showcase tabs.
+Its DocumentDB Local-inspired flow has three navigation markers: **Introduction**,
+**Configure**, and **Set up**, with the completion receipt below the setup stages.
+All five stages are mocked, advancing every 900 ms; setup runs no commands,
+downloads, network requests, or file writes.
+
+The Main View keeps its original compact demos, with a short showcase introduction
+and launch button. Component descriptions and documentation links live in the
+showcase. StepList, StatusList, service metrics, and badges each have independent
+**Preview config** controls and a dashed preview with its **Component preview**
+heading outside the border. Metrics and badges occupy separate sections within
+**Metrics & badges**; badges use `shape="rounded"` throughout the starter kit, and
+the badge preview includes a **Keyboard focus** toggle.
+
+Direct Command Palette shortcuts are **Webview Starter Kit: Open Component Showcase**
+and **Webview Starter Kit: Open wizard demo**.
+
+For the standalone browser preview, run `npm run watch:views` and open
+http://127.0.0.1:18080/static/component-showcase.html (default: `componentShowcase`).
+Open http://127.0.0.1:18080/static/component-showcase.html?view=showcaseWizard for
+**Wizard demo**, or use `?view=mainView` for the Main View;
+the minimal tRPC launch mock allowlists launch procedures and rejects unsupported
+procedures. Browser interaction does not exercise the real Extension Host or webview CSP. See the
+[component guide](docs/component-showcase.md) for the catalog, workflows, and upstream visuals.
+
 ## Getting Started
 
 ```bash
@@ -68,20 +101,23 @@ To reopen it manually (e.g. after closing the panel), use the Command Palette (`
 
 ## Project Structure
 
-| Folder                       | Purpose                                                                                                                                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/`                       | Extension host source code                                                                                                                                                                   |
-| `src/webviews/`              | React webview components                                                                                                                                                                     |
-| `src/webviews/_integration/` | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
-| `src/webviews/components/`   | Shared components (`MonacoEditor`, `Announcer`) and the Monaco theme derivation                                                                                                              |
-| `src/webviews/demo/`         | Demo webview views                                                                                                                                                                           |
-| `src/commands/`              | Command handlers                                                                                                                                                                             |
-| `l10n/`                      | Localization bundles                                                                                                                                                                         |
+| Folder                                 | Purpose                                                                                                                                                                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/`                                 | Extension host source code                                                                                                                                                                   |
+| `src/webviews/`                        | React webview components                                                                                                                                                                     |
+| `src/webviews/_integration/`           | Consumer-owned glue over the [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview) package (root router, telemetry adapter, panel preset, registry) |
+| `src/webviews/components/`             | Consumer-owned Monaco wrapper and accessibility helpers; theme derivation comes from the package's `/monaco` entry                                                                           |
+| `src/webviews/demo/`                   | Demo webview views                                                                                                                                                                           |
+| `src/webviews/demo/componentShowcase/` | Interactive examples of all six packaged component families                                                                                                                                  |
+| `src/webviews/static/`                 | Standalone browser preview HTML                                                                                                                                                              |
+| `src/commands/`                        | Command handlers                                                                                                                                                                             |
+| `l10n/`                                | Localization bundles                                                                                                                                                                         |
 
 > The type-safe RPC transport (tRPC over `postMessage`), the panel facade, and
-> the React hooks are provided by version 0.10.0 of the
-> **`@microsoft/vscode-ext-webview`** package, and the adaptive Fluent UI theming
-> by its sibling **`@microsoft/vscode-ext-webview-fluentui`**. See
+> the React hooks are provided by version 0.10.1 of the
+> **`@microsoft/vscode-ext-webview`** package, and adaptive Fluent UI theming,
+> reusable components, and Monaco theme mapping by its sibling
+> **`@microsoft/vscode-ext-webview-fluentui`** (`~1.1.0`). See
 > [migration.md](migration.md) for the current package-based target architecture.
 
 ## Development
@@ -163,11 +199,27 @@ VS Code webviews communicate with the extension host through `window.postMessage
 
 `VSCodeFluentProvider`, from [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui), reads VS Code's CSS custom properties (e.g., `--vscode-editor-background`) at runtime and generates a matching Fluent UI theme. When the user switches VS Code themes, the webview updates automatically without a reload.
 
+The [webview entry point](src/webviews/index.tsx) imports the provider from the package
+root, which injects document-global adaptive CSS once. The public `/components` and
+`/monaco` entries do not inject that stylesheet; do not deep-import package CSS or source.
+The components can also use a standard Fluent UI v9 `FluentProvider` without adaptive theming.
+
+The [Monaco wrapper](src/webviews/components/MonacoEditor.tsx) uses `useVSCodeMonacoTheme`
+from `/monaco`, registers the theme before editor creation, and reapplies it when colors
+change, including switches between two dark themes or edits to `workbench.colorCustomizations`.
+The package supplies theme data without importing Monaco; consumers still own the editor,
+loader/workers, and focus handling. See [Component Showcase](docs/component-showcase.md)
+for import examples and integration boundaries.
+
 <p align="center"><img src="./resources/vscode-webview-themes-support.gif" alt="Adaptive theming in action — the webview automatically adapts as VS Code themes change" width="600" style="max-width:100%;height:auto;"></p>
 
 ### Content Security Policy
 
 The framework's `WebviewController` generates a strict CSP header for each webview panel. Only resources from the extension's own directory and the webview's `cspSource` are allowed, following [VS Code's security best practices](https://code.visualstudio.com/docs/extensions/webview#_security).
+
+Fluent UI's Griffel and the adaptive package stylesheet inject runtime styles, so the
+style policy must allow `style-src 'unsafe-inline'`. This is a style requirement, not a
+reason to relax script restrictions; see the [upstream CSP guidance](https://github.com/microsoft/vscode-documentdb/blob/4540d86c7371e8e708fb1c9a1c7f75dc7c2a07c2/packages/vscode-ext-webview-fluentui/README.md#things-to-know-before-you-adopt-it).
 
 ## Copilot Skills
 
@@ -270,19 +322,22 @@ This repository is the canonical **all-in** (React + tRPC + webview) reference
 consumer of that package. Teams can adopt the patterns by installing the package
 rather than forking or copying the source.
 
-See [migration.md](migration.md) for a focused guide to the current 0.10.0
+See [migration.md](migration.md) for a focused guide to the current 0.10.1
 package-based architecture and its consumer-owned integration layer.
 
-The adaptive theming system likewise ships separately, as
-[`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui).
+Adaptive Fluent UI theming, six reusable component families (16 component exports),
+and Monaco theme mapping ship as
+[`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui),
+used here at `~1.1.0`. Its three public entries are `.`, `/components`, and `/monaco`.
 Neither package depends on the other: theming reads the active theme off the DOM
-and needs no transport, so each is adoptable on its own. What stays in this
-repository is the Monaco theme derivation, under
-`src/webviews/components/monaco/` — Monaco is not Fluent, and a ~5 MB peer has no
-place in a theming package.
+and needs no transport, so each is adoptable on its own. Monaco is not a peer or
+runtime dependency of the styling package; this repository keeps its own
+[editor wrapper](src/webviews/components/MonacoEditor.tsx) and worker integration.
+Explore the [Component Showcase guide](docs/component-showcase.md) for every shipped
+component and its local example.
 
 For a high-level overview of both packages, how they divide responsibilities, and
-how the DocumentDB and Azure Cosmos DB extensions consume them, see
+which integrations the DocumentDB and Azure Cosmos DB extensions use, see
 [docs/webview-packages-overview.md](docs/webview-packages-overview.md).
 
 ## Contributors

@@ -117,6 +117,20 @@ const commonRouter = router({
                 detail: input.modal ? input.cause : undefined,
             });
         }),
+    displayInformationMessage: publicProcedure
+        .input(
+            z.object({
+                message: z.string(),
+                modal: z.boolean(),
+                detail: z.string().optional(),
+            }),
+        )
+        .mutation(({ input }) => {
+            void vscode.window.showInformationMessage(input.message, {
+                modal: input.modal,
+                detail: input.modal ? input.detail : undefined,
+            });
+        }),
     openUrl: publicProcedure
         .input(
             z.object({

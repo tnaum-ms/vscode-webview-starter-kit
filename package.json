@@ -106,7 +106,7 @@
     "@fluentui/react-components": "~9.74.4",
     "@fluentui/react-icons": "~2.0.313",
     "@microsoft/vscode-ext-webview": "~0.10.1",
-    "@microsoft/vscode-ext-webview-fluentui": "~0.1.0-preview",
+    "@microsoft/vscode-ext-webview-fluentui": "~1.1.0",
     "@monaco-editor/react": "~4.7.0",
     "@trpc/client": "~11.10.0",
     "@trpc/server": "~11.10.0",
@@ -133,6 +133,16 @@
         "command": "webviewStarter.openBasicView",
         "title": "Open Basic View",
         "category": "Webview Starter Kit"
+      },
+      {
+        "command": "webviewStarter.openComponentShowcase",
+        "title": "%webviewStarter.openComponentShowcase.title%",
+        "category": "Webview Starter Kit"
+      },
+      {
+        "command": "webviewStarter.openShowcaseWizard",
+        "title": "%webviewStarter.openShowcaseWizard.title%",
+        "category": "Webview Starter Kit"
       }
     ],
     "menus": {
@@ -142,6 +152,12 @@
         },
         {
           "command": "webviewStarter.openBasicView"
+        },
+        {
+          "command": "webviewStarter.openComponentShowcase"
+        },
+        {
+          "command": "webviewStarter.openShowcaseWizard"
         }
       ]
     }

@@ -66,7 +66,7 @@ export const ReportEventDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Report Event')}</Subtitle1>
-                <Badge appearance="tint" color="brand">
+                <Badge appearance="tint" color="brand" shape="rounded">
                     {l10n.t('Telemetry')}
                 </Badge>
             </div>
@@ -90,7 +90,7 @@ export const ReportEventDemo: React.FC = () => {
                         {l10n.t('Send Event')}
                     </Button>
                     {sent && (
-                        <Badge appearance="filled" color="success">
+                        <Badge appearance="filled" color="success" shape="rounded">
                             {l10n.t('Sent')}
                         </Badge>
                     )}

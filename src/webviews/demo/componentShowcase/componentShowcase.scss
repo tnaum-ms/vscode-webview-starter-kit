@@ -1,0 +1,139 @@
+.componentShowcase {
+    min-width: 0;
+    color: var(--colorNeutralForeground1, var(--vscode-foreground));
+    background: var(--colorNeutralBackground1, var(--vscode-editor-background));
+    font-family: var(--vscode-font-family);
+    letter-spacing: 0;
+
+    [hidden] {
+        display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    h1 {
+        font-size: 24px;
+        line-height: 30px;
+    }
+
+    h2 {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    h3 {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--colorStrokeFocus2, var(--vscode-focusBorder));
+        outline-offset: 2px;
+    }
+
+    .fui-Button {
+        flex-shrink: 0;
+        white-space: normal;
+    }
+}
+
+.componentShowcase__body > div {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1100px;
+    margin-inline: auto;
+    padding: 20px;
+    gap: 10px;
+}
+
+.componentShowcase .componentShowcase__tabs,
+.componentShowcase__actions,
+.componentShowcase__badges,
+.componentShowcase__controls,
+.componentShowcase__links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+
+.componentShowcase__tabs .fui-Tab {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.componentShowcase__stack,
+.componentShowcase__sample,
+.componentShowcase__stage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.componentShowcase__controls {
+    align-items: flex-end;
+}
+
+.componentShowcase__links {
+    align-items: flex-start;
+    gap: 6px 16px;
+}
+
+.componentShowcase__controls > * {
+    flex: 1 1 150px;
+    max-width: 240px;
+    min-width: 0;
+}
+
+.componentShowcase__controls .fui-Select {
+    min-width: 0;
+}
+
+.componentShowcase__metrics {
+    gap: 10px;
+}
+
+.componentShowcase__metrics > * {
+    min-width: 0;
+    border-radius: 4px;
+}
+
+.componentShowcase__divider {
+    width: 100%;
+    margin-block: 10px;
+}
+
+.componentShowcase__sample {
+    padding: 20px;
+    border: 1px dashed var(--colorNeutralStroke1, var(--vscode-panel-border));
+    border-radius: 4px;
+}
+
+.componentShowcase__stage {
+    min-height: 90px;
+}
+
+.componentShowcase__footer {
+    font-size: 12px;
+    color: var(--colorNeutralForeground2, var(--vscode-descriptionForeground));
+}
+
+@media (max-width: 480px) {
+    .componentShowcase__body > div {
+        padding: 10px;
+    }
+
+    .componentShowcase__controls > * {
+        max-width: none;
+    }
+}

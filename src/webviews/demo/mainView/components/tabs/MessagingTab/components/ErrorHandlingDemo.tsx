@@ -73,7 +73,7 @@ export const ErrorHandlingDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Error Handling')}</Subtitle1>
-                <Badge appearance="tint" color="danger">
+                <Badge appearance="tint" color="danger" shape="rounded">
                     {l10n.t('Try/Catch')}
                 </Badge>
             </div>

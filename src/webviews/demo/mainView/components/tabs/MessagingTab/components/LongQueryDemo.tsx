@@ -83,7 +83,7 @@ export const LongQueryDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Long-Running Query with Abort')}</Subtitle1>
-                <Badge appearance="tint" color="important">
+                <Badge appearance="tint" color="important" shape="rounded">
                     {l10n.t('AbortSignal')}
                 </Badge>
             </div>

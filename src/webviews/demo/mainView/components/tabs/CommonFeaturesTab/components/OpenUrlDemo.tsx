@@ -21,7 +21,7 @@ export const OpenUrlDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Open URL')}</Subtitle1>
-                <Badge appearance="tint" color="informative">
+                <Badge appearance="tint" color="informative" shape="rounded">
                     {l10n.t('Navigation')}
                 </Badge>
             </div>

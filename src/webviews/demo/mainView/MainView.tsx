@@ -6,7 +6,7 @@
 /**
  * MainView — the primary demo webview for the VS Code Webview Starter Kit.
  *
- * This component is organized into four top-level tabs:
+ * This component is organized into five top-level tabs:
  *
  *   1. **Webview Messaging** — Demonstrates tRPC communication patterns between
  *      the React webview (browser) and the VS Code extension host (Node.js).
@@ -26,6 +26,9 @@
  *   4. **Monaco Editor** — Embeds the same Monaco Editor that powers VS Code.
  *      Demonstrates the `MonacoEditor` wrapper component with VS Code theme
  *      synchronization and accessibility enhancements.
+ *
+ *   5. **Component Showcase** - Introduces the packaged components and opens
+ *      their interactive samples in a dedicated panel.
  *
  * ## Architecture overview
  *
@@ -66,6 +69,7 @@ import { useState } from 'react';
 import { useTrpcClient } from '../../_integration/useTrpcClient';
 import { Header } from './components/Header';
 import { CommonFeaturesTab } from './components/tabs/CommonFeaturesTab/CommonFeaturesTab';
+import { ComponentShowcaseTab } from './components/tabs/ComponentShowcaseTab/ComponentShowcaseTab';
 import { MessagingTab } from './components/tabs/MessagingTab/MessagingTab';
 import { MonacoTab } from './components/tabs/MonacoTab/MonacoTab';
 import { ThemeTab } from './components/tabs/ThemeTab/ThemeTab';
@@ -76,6 +80,7 @@ const TAB_MESSAGING = 'messaging';
 const TAB_COMMON = 'common';
 const TAB_THEME = 'theme';
 const TAB_MONACO = 'monaco';
+const TAB_SHOWCASE = 'showcase';
 
 export const MainView: React.FC = () => {
     // ─── Top-level tab state ────────────────────────────────────
@@ -102,6 +107,7 @@ export const MainView: React.FC = () => {
                 <Tab value={TAB_COMMON}>{l10n.t('Common Features')}</Tab>
                 <Tab value={TAB_THEME}>{l10n.t('Theme & Fluent UI')}</Tab>
                 <Tab value={TAB_MONACO}>{l10n.t('Monaco Editor')}</Tab>
+                <Tab value={TAB_SHOWCASE}>{l10n.t('Component Showcase')}</Tab>
             </TabList>
 
             <div className="mainView__tab-content">
@@ -109,6 +115,7 @@ export const MainView: React.FC = () => {
                 {activeTab === TAB_COMMON && <CommonFeaturesTab />}
                 {activeTab === TAB_THEME && <ThemeTab />}
                 {activeTab === TAB_MONACO && <MonacoTab />}
+                {activeTab === TAB_SHOWCASE && <ComponentShowcaseTab />}
             </div>
         </div>
     );

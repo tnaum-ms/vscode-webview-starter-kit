@@ -36,6 +36,16 @@ export async function activateInternal(
     const { openBasicView } = await import('./commands/openBasicView');
     context.subscriptions.push(vscode.commands.registerCommand('webviewStarter.openBasicView', openBasicView));
 
+    const { openComponentShowcase } = await import('./commands/openComponentShowcase');
+    context.subscriptions.push(
+        vscode.commands.registerCommand('webviewStarter.openComponentShowcase', openComponentShowcase),
+    );
+
+    const { openShowcaseWizard } = await import('./commands/openShowcaseWizard');
+    context.subscriptions.push(
+        vscode.commands.registerCommand('webviewStarter.openShowcaseWizard', openShowcaseWizard),
+    );
+
     // Automatically open the main view on activation
     openMainView();
 }

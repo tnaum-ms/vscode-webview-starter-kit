@@ -8,10 +8,10 @@ _A short brief for teams building VS Code extensions with webviews._
 
 We published **two independent npm packages** that take the boring, error-prone parts of VS Code webviews off your plate:
 
-| Package                                                                                                          | Version         | What it gives you                                                                                                                                         | What it does **not** do                                           |
-| ---------------------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview)                   | `0.10.1`        | **The core.** Type-safe RPC over `postMessage` (tRPC), the panel/controller facade, CSP + resource wiring, dev-server/bundle switching, React hooks       | No UI, no components, no theming, no opinion on your UI framework |
-| [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui) | `0.1.0-preview` | **The look.** Adaptive VS Code → Fluent UI theme mapping (`VSCodeFluentProvider`) + a small set of layout components (`Container`, `Wizard`, `StepList`…) | No transport, no messaging, no extension-host code                |
+| Package                                                                                                          | Version  | What it gives you                                                                                                                                   | What it does **not** do                                               |
+| ---------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [`@microsoft/vscode-ext-webview`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview)                   | `0.10.1` | **The core.** Type-safe RPC over `postMessage` (tRPC), the panel/controller facade, CSP + resource wiring, dev-server/bundle switching, React hooks | No UI, no components, no theming, no opinion on your UI framework     |
+| [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui) | `1.1.0`  | **The look.** Adaptive Fluent UI theming, six reusable component families (16 component exports), and Monaco theme data                             | No transport, no messaging, no extension-host code, no Monaco runtime |
 
 Neither package depends on the other. Adopt one, the other, or both.
 
@@ -55,14 +55,23 @@ Blue = `@microsoft/vscode-ext-webview` · Purple = `@microsoft/vscode-ext-webvie
 | `/webview`  | webview       | Framework-agnostic transport (no React)                                    |
 | `/react`    | webview       | `useTrpcClient`, `useConfiguration`, `WithWebviewContext`, `useRpcEvents`  |
 
-`@microsoft/vscode-ext-webview-fluentui` ships two:
+`@microsoft/vscode-ext-webview-fluentui` ships three public entries:
 
-| Entry point    | Contains                                                                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`            | `VSCodeFluentProvider`, `createVSCodeFluentTheme`, `generateAdaptiveLight/DarkTheme`, `useActiveVSCodeTheme`, `useActiveVSCodeThemeKind` |
-| `./components` | `Container` (+ header/body/nav/footer/section), `Wizard`, `StepList`, `StatusList`, `MetricGrid`                                         |
+| Entry point    | Contains                                                                                                                                                    |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`            | `VSCodeFluentProvider`, `createVSCodeFluentTheme`, `generateAdaptiveLight/DarkTheme`, `useActiveVSCodeTheme`, `useActiveVSCodeThemeKind`                    |
+| `./components` | `Container` and its six parts, `Wizard`/`WizardStep`, `StepList`/`StepListItem`, `StatusList`/`StatusListItem`, `MetricGrid`/`MetricCard`, `FocusableBadge` |
+| `./monaco`     | `createVSCodeMonacoTheme`, `useVSCodeMonacoTheme`, `DEFAULT_MONACO_THEME_NAME`, and theme/option types                                                      |
 
-The `./components` entry deliberately does **not** pull in the theming code and injects no stylesheet, so you can take a component without buying into the theme, and vice versa.
+The root import injects adaptive Fluent overrides once per document. `/components`
+and `/monaco` inject no stylesheet; components work under any Fluent UI v9
+`FluentProvider`, and Monaco theme data has no Monaco runtime dependency. Import
+only these public entries, never deep CSS or source paths. Runtime styles from
+Griffel and the root entry require `style-src 'unsafe-inline'` in the webview CSP.
+
+The [Component Showcase guide](component-showcase.md) lists all 16 component exports
+in six families, with local examples, upstream family docs, and screenshots. These
+are additions to Fluent UI, not a count of standard `@fluentui/react-components` controls.
 
 ---
 
@@ -127,21 +136,21 @@ Three concrete wins:
 
 ---
 
-## Two production extensions, two very different stacks, same packages
+## Two production extensions, two very different stacks, same core package
 
 This is the key point for adoption: **the packages do not dictate your build, your styling, or your folder layout.**
 
-|                  | [DocumentDB for VS Code](https://github.com/microsoft/vscode-documentdb)   | [Azure Cosmos DB for VS Code](https://github.com/microsoft/vscode-cosmosdb)                          |
-| ---------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Bundler**      | Webpack 5 + SWC (`webpack.config.ext.js` / `.views.js`)                    | **Vite 8** + `@vitejs/plugin-react` (`vite.config.ext.mjs` / `.views.mjs`) + custom plugins          |
-| **Dev loop**     | `webpack-dev-server` + React Refresh, `localhost:18080`                    | Vite dev server + HMR, `localhost:18080`                                                             |
-| **Styling**      | SCSS (+ global Fluent overrides)                                           | **Griffel `makeStyles`** (CSS-in-JS)                                                                 |
-| **Repo shape**   | npm **workspaces monorepo** (`packages/*`, incl. the package's own source) | Single package                                                                                       |
+|                  | [DocumentDB for VS Code](https://github.com/microsoft/vscode-documentdb)   | [Azure Cosmos DB for VS Code](https://github.com/microsoft/vscode-cosmosdb)                              |
+| ---------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Bundler**      | Webpack 5 + SWC (`webpack.config.ext.js` / `.views.js`)                    | **Vite 8** + `@vitejs/plugin-react` (`vite.config.ext.mjs` / `.views.mjs`) + custom plugins              |
+| **Dev loop**     | `webpack-dev-server` + React Refresh, `localhost:18080`                    | Vite dev server + HMR, `localhost:18080`                                                                 |
+| **Styling**      | SCSS (+ global Fluent overrides)                                           | **Griffel `makeStyles`** (CSS-in-JS)                                                                     |
+| **Repo shape**   | npm **workspaces monorepo** (`packages/*`, incl. the package's own source) | Single package                                                                                           |
 | **Glue layer**   | Dedicated `src/webviews/_integration/` folder                              | Spread across `src/panels/trpc/` (host) and `src/webviews/` (client), with **no** `_integration/` folder |
-| **Panels**       | 4 (collection, document, local quick start, Atlas credentials)             | 4 (query editor, document, account overview, migration assistant)                                    |
-| **RPC scale**    | Several routers, incl. per-tab sub-routers                                 | ~60+ procedures across 7+ routers, incl. subscription routers                                        |
-| **Tests**        | Jest + `jest-mock-vscode`                                                  | Vitest + Playwright (e2e)                                                                            |
-| **Core package** | `@microsoft/vscode-ext-webview` (workspace build of `0.10.1`)              | `@microsoft/vscode-ext-webview` `~0.10.0` from npm                                                   |
+| **Panels**       | 4 (collection, document, local quick start, Atlas credentials)             | 4 (query editor, document, account overview, migration assistant)                                        |
+| **RPC scale**    | Several routers, incl. per-tab sub-routers                                 | ~60+ procedures across 7+ routers, incl. subscription routers                                            |
+| **Tests**        | Jest + `jest-mock-vscode`                                                  | Vitest + Playwright (e2e)                                                                                |
+| **Core package** | `@microsoft/vscode-ext-webview` (workspace build of `0.10.1`)              | `@microsoft/vscode-ext-webview` `~0.10.0` from npm                                                       |
 
 Both ship real products. Both consume the same transport, controller, and hooks. One is Webpack + SCSS + monorepo; the other is Vite + Griffel + custom Vite plugins for Monaco workers and CSP-safe asset inlining. **Pick whatever build stack you already have.**
 
@@ -155,16 +164,23 @@ If each extension invents its own mapping, our extensions will drift apart the m
 
 `VSCodeFluentProvider` is that mapping, extracted and shared. It reads the active theme off the DOM at runtime and regenerates the Fluent theme when the user switches themes: **no reload, no transport dependency**. That is why the theming package is standalone, and you can adopt it even if you never touch tRPC.
 
-> ⚠️ **Status check, please read.** Today the **starter kit is the only consumer of `@microsoft/vscode-ext-webview-fluentui`.** Both DocumentDB and Cosmos DB still carry the local `themeGenerator.ts` / `DynamicThemeProvider.tsx` that the package was extracted from, and will migrate. So "one shared mapping" is the agreed direction and the reason the package exists, not yet the state of the world. Adopting the package now means you land on the shared mapping from day one instead of migrating later.
+> **Adoption status.** The starter kit consumes `~1.1.0` from npm. DocumentDB uses
+> the workspace styling package following [PR #895](https://github.com/microsoft/vscode-documentdb/pull/895).
+> Cosmos DB's styling-package migration is not established by the evidence here;
+> its transport-package adoption does not imply styling-package adoption.
 
-### Monaco theming: roadmap, not yet packaged
+### Monaco theming: packaged, consumer-applied
 
-If you embed the Monaco editor, its theme must be derived from the same VS Code tokens. That derivation is **not in the fluentui package yet**; it currently lives as plain source in the starter kit:
+The `/monaco` entry derives editor theme data from the same live VS Code colors
+as Fluent theming. `useVSCodeMonacoTheme()` reacts to color changes, including
+switches between two dark themes and `workbench.colorCustomizations` edits.
+The [starter kit wrapper](../src/webviews/components/MonacoEditor.tsx) registers
+the theme before editor creation and reapplies updated data after mount.
 
-- [src/webviews/components/monaco/monacoTheme.ts](../src/webviews/components/monaco/monacoTheme.ts)
-- [src/webviews/components/monaco/vscodeThemeTokens.ts](../src/webviews/components/monaco/vscodeThemeTokens.ts)
-
-Copy it as-is today, it works standalone. It is on the roadmap for `@microsoft/vscode-ext-webview-fluentui`, and the intent is that each such component ships with a companion markdown doc so that **an agent can perform the copy-to-package upgrade for you** when the packaged version lands. One example of that doc convention already exists ([focusableBadge.md](../src/webviews/components/focusableBadge/focusableBadge.md)); the full per-component set is still being written.
+The package neither imports nor requires `monaco-editor`; consumers still own
+installation, loader/workers, layout, focus handling, and applying the theme.
+See the [upstream Monaco guide](https://github.com/microsoft/vscode-documentdb/blob/4540d86c7371e8e708fb1c9a1c7f75dc7c2a07c2/packages/vscode-ext-webview-fluentui/src/monaco/README.md)
+and the [component family guide](component-showcase.md) instead of copying deleted local derivation code.
 
 ---
 
@@ -177,12 +193,22 @@ Copy it as-is today, it works standalone. It is on the roadmap for `@microsoft/v
 What the starter kit is genuinely good for:
 
 - **A running demo** of queries, mutations, subscriptions, abort/cancellation, error handling, adaptive theming, and Monaco. There's a prebuilt `.vsix` on the releases page if you just want to click around.
+- **A component showcase** of all six styling-package families (16 exports). The Main View retains its original compact demos, plus a short **Component Showcase** introduction and **Open Component Showcase** button. Component descriptions and documentation links live in the showcase. StepList, StatusList, service metrics, and badges each have independent **Preview config** controls and a dashed sample with its **Component preview** heading outside the border. Metrics and badges occupy separate regions in **Metrics & badges**; the badge region has a **Keyboard focus** toggle. All starter-kit badges use `shape="rounded"`.
+- **A dedicated Wizard demo.** In **Layout & navigation**, **Open wizard demo** opens the full-viewport `showcaseWizard` panel titled **Wizard demo**; **Webview Starter Kit: Open wizard demo** is the direct command. Inspired by DocumentDB Local, it has three navigation markers: **Introduction**, **Configure**, and **Set up**. Numbered introduction discs, a settings summary table with expandable editors and trailing resets, and an **Advanced options** sample-data toggle demonstrate configuration. Names retain the existing 1-64 character validation; host ports accept **1024-65535**. Expansion focuses the revealed control and uses 200 ms Fluent-token CSS transitions with reduced-motion support. Completion stays in the active setup step with reserved detail space and footer label geometry; the receipt appears below the status list. Header **Optional action** and footer **Learn more** open Fluent dialogs explaining custom handlers. All five setup stages are mocked at 900 ms each: no commands, downloads, network requests, or file writes run. The [showcase guide](component-showcase.md) covers composition, validation, and state.
 - **A commit-by-commit tutorial.** The README walks you through building a webview from nothing in four small, self-contained commits: _scaffold_, then _command & navigation_, then _local React state_, then _typed tRPC call_. Each one compiles on its own, so you can read the whole data path come together instead of reverse-engineering a finished app. Start from the baseline commit linked in the README's [Adding a New View](https://github.com/tnaum-ms/vscode-webview-starter-kit#adding-a-new-view) section.
 - **Copilot skills that build webviews for you.** The repo ships two skills under `.github/skills/`:
   - **`webview-trpc-messaging`**: creating routers and procedures (queries, mutations, subscriptions), wiring the controller, telemetry middleware, `AbortSignal` cancellation.
   - **`react-webview-architecture`**: React/Fluent component patterns, state management, Monaco usage, styling conventions, stale-closure pitfalls.
 
   Ask Copilot for "a new webview with a router and a command" in that workspace and it follows the same patterns end to end. **You can copy these skills into your own repo**, since they describe the package APIs, not starter-kit trivia.
+
+The showcase and wizard require current source or a new build, not the v2.0.0 VSIX.
+After `npm run watch:views`, open http://127.0.0.1:18080/static/component-showcase.html
+(default `componentShowcase`), or append `?view=mainView` or `?view=showcaseWizard`.
+The wizard route has the title **Wizard demo**. The browser launch mock allowlists
+launch procedures and rejects unsupported ones; it does not exercise the real
+Extension Host or webview CSP. Browser geometry validation is separate from these
+source-based documentation updates.
 
 ---
 
@@ -203,7 +229,7 @@ _Paste this section (or the whole document) into your coding agent so it can ans
 
 ```bash
 npm install @microsoft/vscode-ext-webview
-npm install @microsoft/vscode-ext-webview-fluentui   # optional, theming + components
+npm install @microsoft/vscode-ext-webview-fluentui@~1.1.0   # optional: Fluent theming, components, Monaco theme data
 ```
 
 Peer deps for the fluentui package: `@fluentui/react-components ~9.74`, `@fluentui/react-icons ~2.0`, `react >=19`.
@@ -218,28 +244,30 @@ The core package pairs with `@trpc/server` / `@trpc/client` `11.x` and `zod` `4.
 
 ### Reference files in the starter kit (this repo)
 
-| Concern                                       | File                                                                                                                                                                         |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Root tRPC router, merging per-view routers    | [src/webviews/\_integration/appRouter.ts](../src/webviews/_integration/appRouter.ts)                                                                                         |
-| tRPC instance + telemetry middleware adapter  | [src/webviews/\_integration/trpc.ts](../src/webviews/_integration/trpc.ts)                                                                                                   |
-| Host-side panel preset (`openAppWebview`)     | [src/webviews/\_integration/openAppWebview.ts](../src/webviews/_integration/openAppWebview.ts)                                                                               |
-| View id → React component registry            | [src/webviews/\_integration/WebviewRegistry.ts](../src/webviews/_integration/WebviewRegistry.ts)                                                                             |
-| Typed `useTrpcClient` re-export               | [src/webviews/\_integration/useTrpcClient.ts](../src/webviews/_integration/useTrpcClient.ts)                                                                                 |
-| Bundle layout / dev-server config             | [src/webviews/\_integration/configuration.ts](../src/webviews/_integration/configuration.ts)                                                                                 |
-| Webview entry point                           | [src/webviews/index.tsx](../src/webviews/index.tsx)                                                                                                                          |
-| Smallest end-to-end view (the tutorial one)   | [src/webviews/demo/basicView/](../src/webviews/demo/basicView/BasicView.tsx)                                                                                                 |
-| Query / mutation / subscription / abort demos | [src/webviews/demo/mainView/components/tabs/MessagingTab/](../src/webviews/demo/mainView/components/tabs/MessagingTab/MessagingTab.tsx)                                      |
-| Monaco wrapper + theme derivation             | [src/webviews/components/MonacoEditor.tsx](../src/webviews/components/MonacoEditor.tsx), [src/webviews/components/monaco/](../src/webviews/components/monaco/monacoTheme.ts) |
-| Router unit test pattern                      | [src/webviews/\_integration/appRouter.test.ts](../src/webviews/_integration/appRouter.test.ts)                                                                               |
-| Package-based target architecture             | [migration.md](../migration.md)                                                                                                                                              |
-| Copilot skills                                | `.github/skills/webview-trpc-messaging/SKILL.md`, `.github/skills/react-webview-architecture/SKILL.md`                                                                       |
+| Concern                                       | File                                                                                                                                                                                                                               |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root tRPC router, merging per-view routers    | [src/webviews/\_integration/appRouter.ts](../src/webviews/_integration/appRouter.ts)                                                                                                                                               |
+| tRPC instance + telemetry middleware adapter  | [src/webviews/\_integration/trpc.ts](../src/webviews/_integration/trpc.ts)                                                                                                                                                         |
+| Host-side panel preset (`openAppWebview`)     | [src/webviews/\_integration/openAppWebview.ts](../src/webviews/_integration/openAppWebview.ts)                                                                                                                                     |
+| View id → React component registry            | [src/webviews/\_integration/WebviewRegistry.ts](../src/webviews/_integration/WebviewRegistry.ts)                                                                                                                                   |
+| Typed `useTrpcClient` re-export               | [src/webviews/\_integration/useTrpcClient.ts](../src/webviews/_integration/useTrpcClient.ts)                                                                                                                                       |
+| Bundle layout / dev-server config             | [src/webviews/\_integration/configuration.ts](../src/webviews/_integration/configuration.ts)                                                                                                                                       |
+| Webview entry point                           | [src/webviews/index.tsx](../src/webviews/index.tsx)                                                                                                                                                                                |
+| Smallest end-to-end view (the tutorial one)   | [src/webviews/demo/basicView/](../src/webviews/demo/basicView/BasicView.tsx)                                                                                                                                                       |
+| Query / mutation / subscription / abort demos | [src/webviews/demo/mainView/components/tabs/MessagingTab/](../src/webviews/demo/mainView/components/tabs/MessagingTab/MessagingTab.tsx)                                                                                            |
+| Monaco wrapper using packaged theme data      | [src/webviews/components/MonacoEditor.tsx](../src/webviews/components/MonacoEditor.tsx)                                                                                                                                            |
+| Component catalog and local workflows         | [component-showcase.md](component-showcase.md)                                                                                                                                                                                     |
+| Full-page local setup simulation              | [ShowcaseWizard.tsx](../src/webviews/demo/componentShowcase/ShowcaseWizard.tsx), [showcaseWizard.scss](../src/webviews/demo/componentShowcase/showcaseWizard.scss), [openShowcaseWizard.ts](../src/commands/openShowcaseWizard.ts) |
+| Router unit test pattern                      | [src/webviews/\_integration/appRouter.test.ts](../src/webviews/_integration/appRouter.test.ts)                                                                                                                                     |
+| Package-based target architecture             | [migration.md](../migration.md)                                                                                                                                                                                                    |
+| Copilot skills                                | `.github/skills/webview-trpc-messaging/SKILL.md`, `.github/skills/react-webview-architecture/SKILL.md`                                                                                                                             |
 
 ### Reference files in the production extensions
 
 **DocumentDB** (`microsoft/vscode-documentdb`, `main`), Webpack + SCSS + npm workspaces:
 
 - `src/webviews/_integration/`: `appRouter.ts`, `trpc.ts`, `useTrpcClient.ts`, `WebviewRegistry.ts`, `openAppWebview.ts`, `configuration.ts`, `observability/`
-- `src/webviews/theme/`: `DynamicThemeProvider.tsx`, `themeGenerator.ts`, `vscodeThemeTokens.tsx`, `fluentOverrides.scss` (**local theming, pre-dates the fluentui package**)
+- `packages/vscode-ext-webview-fluentui/`: the workspace styling package used by DocumentDB after [PR #895](https://github.com/microsoft/vscode-documentdb/pull/895), including Fluent theming, reusable components, and Monaco theme data; it replaces the earlier local theming stack.
 - `src/webviews/documentdb/{collectionView,documentView,localQuickStart,atlasCredentials}/`: one folder per panel, each with `<View>.tsx` + `<view>Router.ts`
 - `packages/vscode-ext-webview/`: the core package's own source and docs (`README.md`, `ADVANCED.md`, `MIGRATION.md`)
 - Build: `webpack.config.ext.js`, `webpack.config.views.js`
@@ -249,7 +277,7 @@ The core package pairs with `@trpc/server` / `@trpc/client` `11.x` and `zod` `4.
 - `src/panels/BaseTab.ts` + `QueryEditorTab.ts` / `DocumentTab.ts` / `AccountOverviewTab.ts` / `MigrationAssistantTab.ts`: host-side panel controllers
 - `src/panels/trpc/`: `trpc.ts`, `appRouter.ts`, `middleware/azextTelemetryRunner.ts`, `middleware/outputChannelLogger.ts`, `routers/**`, `schemas/**`
 - `src/webviews/WebviewRegistry.ts`: lazy-imported view id to component map
-- `src/webviews/theme/`: local `DynamicThemeProvider.tsx` / `themeGenerator.ts` (**local theming, same story as DocumentDB**)
+- `src/webviews/theme/`: local `DynamicThemeProvider.tsx` / `themeGenerator.ts` in this referenced branch; a migration to the styling package has not been verified here.
 - Build: `vite.config.ext.mjs`, `vite.config.views.mjs`, plus `plugins/vite-plugin-monaco-workers.mjs`, `vite-plugin-no-extension-imports.mjs`, `vite-plugin-react-refresh-preamble.mjs`, `vite-plugin-webview-entry.mjs`
 
 ### Typical steps to add a webview
@@ -274,4 +302,6 @@ The core package pairs with `@trpc/server` / `@trpc/client` `11.x` and `zod` `4.
 
 - Core package: https://www.npmjs.com/package/@microsoft/vscode-ext-webview (README + `ADVANCED.md` + `MIGRATION.md`)
 - Theming package: https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui
+- Styling package [README](https://github.com/microsoft/vscode-documentdb/blob/4540d86c7371e8e708fb1c9a1c7f75dc7c2a07c2/packages/vscode-ext-webview-fluentui/README.md) and [component family guides](https://github.com/microsoft/vscode-documentdb/blob/4540d86c7371e8e708fb1c9a1c7f75dc7c2a07c2/packages/vscode-ext-webview-fluentui/src/components/README.md), pinned to source matching 1.1.0
+- Local [Component Showcase](component-showcase.md)
 - Starter kit README: https://github.com/tnaum-ms/vscode-webview-starter-kit#readme

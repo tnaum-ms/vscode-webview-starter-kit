@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// The package root injects adaptive component CSS once; /components and /monaco imports have no CSS side effects.
 import { VSCodeFluentProvider } from '@microsoft/vscode-ext-webview-fluentui';
 import { type WebviewState, WithWebviewContext } from '@microsoft/vscode-ext-webview/react';
 import * as l10n from '@vscode/l10n';

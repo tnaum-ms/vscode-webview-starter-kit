@@ -74,7 +74,7 @@ export const SubscriptionDemo: React.FC = () => {
         <div className="mainView__card">
             <div className="mainView__card-header">
                 <Subtitle1>{l10n.t('Subscription (Streaming)')}</Subtitle1>
-                <Badge appearance="tint" color="success">
+                <Badge appearance="tint" color="success" shape="rounded">
                     {l10n.t('Subscription')}
                 </Badge>
             </div>
@@ -111,6 +111,7 @@ export const SubscriptionDemo: React.FC = () => {
                                 appearance="filled"
                                 color={val.current === 0 ? 'success' : 'brand'}
                                 size="large"
+                                shape="rounded"
                             >
                                 {val.current}
                             </Badge>
