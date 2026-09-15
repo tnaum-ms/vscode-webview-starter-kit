@@ -36,7 +36,7 @@ useTrpcClient() hook                      openWebview / WebviewController
 
 ## Creating a New Router
 
-Each webview maintains its own router. Follow this pattern:
+Each webview that exposes host operations uses a view router. Follow this pattern:
 
 ### 1. Define the router context
 
@@ -138,11 +138,35 @@ export const WebviewRegistry = {
 export type WebviewName = keyof typeof WebviewRegistry;
 ```
 
+## Opening Another Panel from a Webview
+
+Panel creation is extension-host work. A React component must not import `vscode` or call a host command directly. Expose a typed mutation that executes a registered command on the host:
+
+```typescript
+// Extension host: mainViewRouter.ts
+openDetails: publicProcedureWithTelemetry.mutation(async () => {
+  await vscode.commands.executeCommand('webviewStarter.openDetails');
+}),
+```
+
+Call that mutation from the webview and handle failure locally:
+
+```tsx
+try {
+  await trpcClient.demo.mainView.openDetails.mutate();
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  setOpenError(message);
+}
+```
+
+The command handler calls the panel factory built on `openAppWebview`. Keep command registration, panel construction, localization of the panel title, and singleton/reveal policy on the host. The 2.2.0 showcase uses this pattern for `openComponentShowcase` and `openShowcaseWizard`.
+
 ## Telemetry: `publicProcedure` vs `publicProcedureWithTelemetry`
 
-| Base                           | When to use                                                                  | Runner enrichment                         |
-| ------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------- |
-| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | Not added                                 |
+| Base                           | When to use                                                                  | Runner enrichment                           |
+| ------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------- |
+| `publicProcedure`              | Fire-and-forget, no external calls, telemetry reported separately            | Not added                                   |
 | `publicProcedureWithTelemetry` | **Default choice.** Any procedure touching DB, network, or user-visible work | Added by this repository's telemetry runner |
 
 `publicProcedureWithTelemetry` (defined in `_integration/trpc.ts`) wires the
@@ -279,3 +303,4 @@ export const MyComponent = () => {
 - **Do not mutate the shared `context` object** — the framework's dispatcher clones it per-operation already, but router code should treat `ctx` as read-only
 - **Input validation uses `zod`** — always define `.input(z.object({...}))` for type safety
 - **The `commonRouter`** handles cross-cutting concerns (error reporting, telemetry events, surveys, URL opening) — do not duplicate these in view-specific routers
+- **Panel creation stays on the host** — request it through a typed mutation and a registered VS Code command

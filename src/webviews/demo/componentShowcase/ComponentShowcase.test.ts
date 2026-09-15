@@ -74,7 +74,14 @@ function elements(node: ReactNode): ReactElement<ElementProps>[] {
 
 function textContent(node: ReactNode): string {
     return Children.toArray(node)
-        .map((child) => (isValidElement<ElementProps>(child) ? textContent(child.props.children) : String(child)))
+        .map((child) => {
+            if (isValidElement<ElementProps>(child)) {
+                return textContent(child.props.children);
+            }
+            return typeof child === 'string' || typeof child === 'number' || typeof child === 'bigint'
+                ? String(child)
+                : '';
+        })
         .join(' ');
 }
 

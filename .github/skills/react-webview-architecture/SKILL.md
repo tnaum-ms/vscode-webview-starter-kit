@@ -1,6 +1,6 @@
 ---
 name: react-webview-architecture
-description: Architecture patterns for React-based webviews in the VS Code Webview Starter Kit. Use when creating new webview components, working with state management (Context API), integrating Fluent UI components, handling Monaco Editor, solving stale closure bugs with refs, or debugging webview rendering issues. Does NOT cover tRPC messaging (see webview-trpc-messaging skill).
+description: Architecture patterns for React-based webviews in the VS Code Webview Starter Kit. Use when creating or debugging webview roots, choosing local state or Context, integrating Monaco Editor, applying VSCodeFluentProvider, handling webview styling, or solving stale closures. Does not cover tRPC messaging or the shared Fluent component families.
 ---
 
 # React Webview Architecture
@@ -10,6 +10,7 @@ Patterns and conventions for React webviews in the VS Code Webview Starter Kit.
 **Related skills** (do not duplicate):
 
 - **webview-trpc-messaging** — tRPC routers, procedures, telemetry, AbortSignal, subscriptions, WebviewController
+- **webview-fluentui-components** — Container, Wizard, StepList, StatusList, MetricGrid, FocusableBadge, and their accessibility contracts
 
 **Full reference**: See [references/REACT_ARCHITECTURE_GUIDELINES.md](./references/REACT_ARCHITECTURE_GUIDELINES.md)
 
@@ -19,6 +20,7 @@ Patterns and conventions for React webviews in the VS Code Webview Starter Kit.
 - Adding new components inside `src/webviews/`
 - Working with React Context state management
 - Integrating Monaco Editor
+- Applying adaptive Fluent UI theming
 - Debugging stale closure issues in event handlers
 
 ## Rendering Pipeline
@@ -40,6 +42,8 @@ root.render(
 - **`WebviewRegistry`** — maps webview names → React components (in `src/webviews/_integration/WebviewRegistry.ts`)
 
 Configuration from the extension host is read via `useConfiguration<T>()` (from `@microsoft/vscode-ext-webview/react`).
+
+Import `VSCodeFluentProvider` from the package root. That root import injects the adaptive stylesheet once per document. The package's `/components` and `/monaco` entries do not inject it. Runtime Griffel styles and the adaptive stylesheet require `style-src 'unsafe-inline'` in the webview CSP.
 
 ## File Organization
 
@@ -122,42 +126,27 @@ const onClick = useCallback((event) => {
 
 ## Monaco Editor
 
-### Required patterns:
-
-1. **Manual layout** — Monaco doesn't auto-resize:
+Use the repository's `MonacoEditor` wrapper. It keeps the Monaco runtime consumer-owned while deriving live theme data from the styling package:
 
 ```tsx
-useEffect(() => {
-  const handler = debounce(() => editorRef.current?.layout(), 200);
-  window.addEventListener('resize', handler);
-  handleResize(); // initial layout
-  return () => window.removeEventListener('resize', handler);
-}, []);
+import { useVSCodeMonacoTheme } from '@microsoft/vscode-ext-webview-fluentui/monaco';
+
+const monacoTheme = useVSCodeMonacoTheme({ themeName: 'adaptive' });
 ```
 
-2. **Dispose on unmount**:
+The wrapper:
 
-```tsx
-return () => {
-  editorRef.current?.dispose();
-};
-```
+- defines the theme before editor creation to avoid an incorrect first paint
+- reapplies theme data for same-kind theme switches and `workbench.colorCustomizations` changes
+- integrates Monaco with Fluent's uncontrolled focus handling
+- supports Escape-key exit and announces the keyboard instruction
+- disposes its registered focus listeners on remount and unmount
 
-3. **MonacoAutoHeight** — self-sizing editor for query fields:
-
-```tsx
-<MonacoAutoHeight
-  adaptiveHeight={{ enabled: true, maxLines: 10, minLines: 1, lineHeight: 19 }}
-  onExecuteRequest={() => onExecuteRequest()}
-  onMount={(editor, monaco) => handleEditorDidMount(editor, monaco)}
-/>
-```
-
-4. **JSON Schema delay** — Monaco's JSON worker may not be ready immediately after mount. An AbortController-guarded delay is used (see QueryEditor for the pattern).
+Consumers still own the `monaco-editor` installation, loader/workers, editor options, layout, models, schemas, and feature-specific commands. Call `editor.layout()` when the containing layout changes and Monaco cannot measure itself. Do not copy the deleted local theme generators or import package source, `dist`, or CSS paths.
 
 ## Fluent UI Integration
 
-Use `@fluentui/react-components` (v9), themed via `VSCodeFluentProvider`:
+Use standard controls from `@fluentui/react-components` v9, themed via `VSCodeFluentProvider`:
 
 | Component                  | Usage                     |
 | -------------------------- | ------------------------- |
@@ -169,22 +158,24 @@ Use `@fluentui/react-components` (v9), themed via `VSCodeFluentProvider`:
 | `MessageBar`               | Info/warning messages     |
 | `Skeleton`, `SkeletonItem` | Loading placeholders      |
 
-Animations: `Collapse` from `@fluentui/react-motion-components-preview`
+For the six reusable component families exported by `@microsoft/vscode-ext-webview-fluentui/components`, load the **webview-fluentui-components** skill.
 
 ## Styling
 
 - Each component gets its own `.scss` file, imported directly
-- Shared styles in `sharedStyles.scss`, applied via `@extend`
-- **Consistent spacing unit: `10px`** with flexbox `row-gap`/`column-gap`
-- **No inline styles** — move to SCSS files
-- Avoid negative margins — fix layout with proper flexbox
+- Shared document-level styles and VS Code token fallbacks live in `src/webviews/index.scss`
+- Prefer classes in SCSS for layout and presentation
+- Keep intentional library-integration styles inline when an API requires element props, as in the Monaco focus bumper
+- Prefer flexbox or grid gaps over negative margins
+- Respect `prefers-reduced-motion` for custom transitions
 
 ```scss
 .myView {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  row-gap: 10px;
+  min-width: 0;
+  row-gap: 12px;
 }
 ```
 
@@ -193,18 +184,6 @@ Animations: `Collapse` from `@fluentui/react-motion-components-preview`
 | Hook                                  | Location              | Purpose                                                                                      |
 | ------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------- |
 | `useSelectiveContextMenuPrevention()` | `src/webviews/utils/` | Prevents browser context menu everywhere except Monaco editors. Call once in top-level view. |
-
-## Conditional Rendering Patterns
-
-**Object-based switch:**
-
-```tsx
-{{
-    'Table View': <DataViewPanelTable {...props} />,
-    'Tree View': <DataViewPanelTree {...props} />,
-    'JSON View': <DataViewPanelJSON {...props} />,
-}[currentContext.currentView]}
-```
 
 ## Loading State
 
@@ -225,18 +204,19 @@ try {
 
 ## Shared Components
 
-| Component        | Location                                  | Purpose                                                            |
-| ---------------- | ----------------------------------------- | ------------------------------------------------------------------ |
-| `MonacoEditor`   | `src/webviews/components/`                | Monaco Editor wrapper with accessibility (focus trap, `Announcer`) |
-| `Announcer`      | `src/webviews/components/`                | Declarative screen reader announcements via ARIA live regions      |
-| `focusableBadge` | `src/webviews/components/focusableBadge/` | Styles for keyboard-focusable Badge components                     |
+| Component      | Location                   | Purpose                                                            |
+| -------------- | -------------------------- | ------------------------------------------------------------------ |
+| `MonacoEditor` | `src/webviews/components/` | Monaco Editor wrapper with accessibility (focus trap, `Announcer`) |
+| `Announcer`    | `src/webviews/components/` | Declarative screen reader announcements via ARIA live regions      |
+
+`FocusableBadge` is not local. Import it from `@microsoft/vscode-ext-webview-fluentui/components`; see **webview-fluentui-components**.
 
 ## Common Pitfalls
 
 1. **Forgetting refs with third-party components** → stale data in event handlers
-2. **Not cleaning up** event listeners, Monaco instances, AbortControllers in `useEffect` return
+2. **Not cleaning up** event listeners, subscriptions, timers, disposables, and AbortControllers
 3. **Not calling `editor.layout()`** after resize → blank Monaco panels
 4. **Using `any`** → use proper types or `unknown` with type guards
 5. **Missing `l10n.t()`** on user-facing strings
-6. **Inline styles** instead of SCSS files
-7. **Negative margins** to fix spacing — restructure layout with flexbox gap instead
+6. **Deep-importing package internals** instead of `.`, `/components`, or `/monaco`
+7. **Recreating local theme mapping** instead of using `VSCodeFluentProvider` and `useVSCodeMonacoTheme`

@@ -20,6 +20,7 @@
 
 - Updated `@microsoft/vscode-ext-webview` to 0.10.1. This package update adds its migration guide to the published tarball without changing runtime or type APIs.
 - Added guides for the two-package architecture and the Component Showcase, and refreshed the README and repository guidance for the current integration.
+- Updated the Copilot skills for the 2.2.0 architecture: refreshed the React and tRPC panel-launch guidance, and added a dedicated `webview-fluentui-components` skill covering all six shared component families and their accessibility contracts.
 - Added coverage for the showcase, wizard, status workflows and Monaco theme integration, and updated router tests for the new panels.
 
 ## 2.1.0
