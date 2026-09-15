@@ -1,14 +1,26 @@
 # Changelog
 
-## Unreleased
+## 2.2.0
 
-- Updated `@microsoft/vscode-ext-webview` to 0.10.1. This release adds the package migration guide to the published tarball and does not change runtime or type APIs.
-- **Adopted the [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui) package** — the adaptive theming that previously lived in a local `src/webviews/theme/` copy is now consumed from the published npm package. `DynamicThemeProvider` becomes `VSCodeFluentProvider`, and the `useAdaptive` flag is gone: its `false` branch returned Fluent's canned Teams themes, which is the absence of the package rather than a feature of it.
-- **The adaptive variable sync now comes from the package** — the interaction states, secondary surfaces, separators and disabled controls previously synced by hand ship in the package verbatim. Skeleton stencils differ deliberately: the package makes them opaque rather than alpha overlays, because an alpha stencil adds to Fluent's resting fill and leaves a visible edge sweeping across an `opaque` skeleton. Pass `appearance="translucent"`.
-- **Fluent overrides now ship with the theming** — the package injects a stylesheet of component-scoped escapes for cases a Fluent recipe cannot be reached through tokens. Every rule is `:where()`-wrapped, so your own selectors still win.
-- **Monaco theming stays in the extension**, at `src/webviews/components/monaco/` — Monaco is not Fluent, and the package declines a ~5 MB `monaco-editor` peer. `MonacoEditor` derives its theme from `useActiveVSCodeThemeKind()`, cached on the theme kind.
-- **Removed** the local `src/webviews/theme/` folder (~1,260 lines: the provider, theme context, generators and LCH/LAB palette math).
-- **Requires `@fluentui/react-components` `~9.74`** — the package pins a narrow range because its overrides key off `fui-*` class names.
+### Component showcase
+
+- **Added a dedicated Component Showcase** for all six component families and 16 named exports from `@microsoft/vscode-ext-webview-fluentui/components`: Container, Wizard, StepList, StatusList, MetricGrid and FocusableBadge. Interactive previews cover layout, navigation, status flows, metric states and keyboard-accessible badges.
+- **Added a full-page Wizard demo** with editable setup options, validation, a five-stage simulated provisioning flow, cancellation and restart behavior. The simulation performs no downloads, container operations, network requests or file writes.
+- **Added launch points throughout the starter kit**: a new Main View tab, separate Component Showcase and Wizard panels, Command Palette entries and a standalone browser preview for local UI development.
+
+### Fluent UI integration
+
+- **Adopted [`@microsoft/vscode-ext-webview-fluentui`](https://www.npmjs.com/package/@microsoft/vscode-ext-webview-fluentui) 1.1.0** as the shared source for adaptive Fluent UI theming, reusable components and Monaco theme data.
+- **Replaced `DynamicThemeProvider` with `VSCodeFluentProvider`**. Adaptive variable synchronization and component-scoped Fluent overrides now ship with the package, and the former `useAdaptive` opt-out has been removed.
+- **Updated `MonacoEditor` to use packaged VS Code theme data** while keeping the Monaco runtime consumer-owned. Theme updates now cover same-kind theme switches and `workbench.colorCustomizations` changes without adding a `monaco-editor` package dependency.
+- **Removed the local `src/webviews/theme/` implementation**, including the copied provider, theme context, generators and color-space utilities.
+- **Updated Fluent UI to `~9.74`** to match the styling package's supported peer range. Opaque skeletons now use opaque package stencils; use `appearance="translucent"` when an alpha overlay is desired.
+
+### Core package, documentation and tests
+
+- Updated `@microsoft/vscode-ext-webview` to 0.10.1. This package update adds its migration guide to the published tarball without changing runtime or type APIs.
+- Added guides for the two-package architecture and the Component Showcase, and refreshed the README and repository guidance for the current integration.
+- Added coverage for the showcase, wizard, status workflows and Monaco theme integration, and updated router tests for the new panels.
 
 ## 2.1.0
 
